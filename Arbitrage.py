@@ -67,6 +67,7 @@ class ArbitrageEvent:
         self.p2_ind = event_list[0].p2_ind
 
         # Determine if pairs are ordered
+        # TODO: Make this handle (and fix) non-ordered players
         for event in event_list[1:]:
             if not (event.p1_ind == self.p1_ind and event.p2_ind == self.p2_ind):
                 raise ValueError("Events are not ordered correctly")
@@ -128,7 +129,10 @@ class BettingEvent:
         self.p2 = p2
         self.win_odds = self.translate_odds(win_odds)
         self.lose_odds = self.translate_odds(lose_odds)
-        self.draw_odds = self.translate_odds(draw_odds)
+        if draw_odds is not None:
+            self.draw_odds = self.translate_odds(draw_odds)
+        else:
+            self.draw_odds = None
 
         self.set_player_inds()
 
@@ -140,9 +144,12 @@ class BettingEvent:
         return output
 
     def set_player_inds(self):
-        if self.sport == "FOOTBALL":
-            self.p1_ind = FOOTBALL_DICT[self.p1]
-            self.p2_ind = FOOTBALL_DICT[self.p2]
+        try:
+            if self.sport == "FOOTBALL":
+                self.p1_ind = FOOTBALL_DICT[self.p1]
+                self.p2_ind = FOOTBALL_DICT[self.p2]
+        except KeyError:
+            raise KeyError("Player not found in dictionary")
 
     def translate_odds(self, odds):
         try:
@@ -153,7 +160,7 @@ class BettingEvent:
 
         try:
             odds = float(odds)
-            return odds
+            return round(odds, 5)
         except ValueError:
             num, dem = odds.replace(" ", "").split("/")
             return float(num)/float(dem)
@@ -350,7 +357,6 @@ def debug():
     print(arb.get_arb_betting_amounts(1000))
 
 
-
 def main(date, category):
     # Loop through each bookmaker for this category
     events = []
@@ -375,9 +381,7 @@ def main(date, category):
         print("\n\n\n")
 
 
-
-
 if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d")
-    #main(date, "Football_L2")
-    debug()
+    main(date, "Football_L2")
+    #debug()
