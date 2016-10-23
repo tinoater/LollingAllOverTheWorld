@@ -11,15 +11,15 @@ class BettingEventFractionalOddsTestCase(unittest.TestCase):
 
     def test_fractional_odds_no_space(self):
         """Are fractional odds translated correctly when no spacces?"""
-        self.assertEqual(self.event.win_odds, 2.5)
+        self.assertEqual(self.event.win_odds, 3.5)
 
     def test_fractional_odds_with_space(self):
         """Are fractional odds translated correctly with spacces?"""
-        self.assertEqual(self.event.lose_odds, 2.5)
+        self.assertEqual(self.event.lose_odds, 3.5)
 
     def test_fractional_odds_with_tabs(self):
         """Are fractional odds translated correctly with tabs and spacces?"""
-        self.assertEqual(self.event.draw_odds, 2.5)
+        self.assertEqual(self.event.draw_odds, 3.5)
 
     def setUp(self):
         bookmaker = "Dummy bookmaker"
