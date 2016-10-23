@@ -146,19 +146,60 @@ class BettingEventPlayerIndTestCase(unittest.TestCase):
         self.lose_odds = "EVENS"
 
 
-# ------------------------
+# --------------------------
 # ArbitrageEvent class tests
-# ------------------------
+# --------------------------
 class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
     """Tests for ArbitrageEvent class in arbitrage.py."""
 
     def test_non_ordered_exception(self):
         """Does the arb fail when players are not ordered?"""
-        self.assertRaises(ValueError, lambda: arbitrage.ArbitrageEvent([self.one, self.two]))
+        arb = arbitrage.ArbitrageEvent([self.one, self.two])
+
+    def test_non_ordered(self):
+        """Does the arb work when players are not ordered?"""
+        t = arbitrage.ArbitrageEvent([self.one, self.two])
+
+        self.assertEqual(t.events[1].p1, "Blackpool")
+        self.assertEqual(t.events[1].p2, "Doncaster")
+        self.assertEqual(t.events[1].p1_ind, 3)
+        self.assertEqual(t.events[1].p2_ind, 10)
+        self.assertEqual(t.events[1].win_odds, 5.82)
+        self.assertEqual(t.events[1].lose_odds, 1.625)
+
+        # Just to make sure
+        self.assertEqual(t.events[0].p1, "Blackpool")
+        self.assertEqual(t.events[0].p2, "Doncaster")
+        self.assertEqual(t.events[0].p1_ind, 3)
+        self.assertEqual(t.events[0].p2_ind, 10)
+        self.assertEqual(t.events[0].win_odds, 2.1)
+        self.assertEqual(t.events[0].lose_odds, 2.5)
 
     def test_non_ordered_third_exception(self):
-        """Does the arb fail when one event is not ordered?"""
-        self.assertRaises(ValueError, lambda: arbitrage.ArbitrageEvent([self.one, self.three, self.two]))
+        """Does the arb work when third event is not ordered?"""
+        t = arbitrage.ArbitrageEvent([self.one, self.three, self.two])
+
+        self.assertEqual(t.events[2].p1, "Blackpool")
+        self.assertEqual(t.events[2].p2, "Doncaster")
+        self.assertEqual(t.events[2].p1_ind, 3)
+        self.assertEqual(t.events[2].p2_ind, 10)
+        self.assertEqual(t.events[2].win_odds, 5.82)
+        self.assertEqual(t.events[2].lose_odds, 1.625)
+
+        # Confirm first two have not been reordered too
+        self.assertEqual(t.events[0].p1, "Blackpool")
+        self.assertEqual(t.events[0].p2, "Doncaster")
+        self.assertEqual(t.events[0].p1_ind, 3)
+        self.assertEqual(t.events[0].p2_ind, 10)
+        self.assertEqual(t.events[0].win_odds, 2.1)
+        self.assertEqual(t.events[0].lose_odds, 2.5)
+
+        self.assertEqual(t.events[1].p1, "Blackpool")
+        self.assertEqual(t.events[1].p2, "Doncaster")
+        self.assertEqual(t.events[1].p1_ind, 3)
+        self.assertEqual(t.events[1].p2_ind, 10)
+        self.assertEqual(t.events[1].win_odds, 2.9)
+        self.assertEqual(t.events[1].lose_odds, 2.5)
 
     def setUp(self):
         self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
@@ -246,3 +287,54 @@ class ArbitrageEventArbPercentageArbTestCase(unittest.TestCase):
         self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
                            2.9, 2.5, 1.25)
         self.arb = arbitrage.ArbitrageEvent([self.one, self.two, self.three])
+
+
+# ------------------
+# Market class tests
+# ------------------
+class MarketTestCase(unittest.TestCase):
+    """Tests for Market class in arbitrage.py."""
+    def setUp(self):
+        self.event_list = []
+        self.paddy = arbitrage.PaddyPowerFootballMatchPage(
+            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\Paddy_Football_L2.txt"))
+        self.eee = arbitrage.Eight88FootballMatchPage(
+            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\888_Football_L2.txt"))
+
+        self.event_list.append(self.paddy.betting_events)
+        self.event_list.append(self.eee.betting_events)
+
+    def test_correct_number_of_arbs_full_pairing(self):
+        """Are all pairs of arbs created when full pairings are present?"""
+        market = arbitrage.Market(self.event_list)
+        self.assertEqual(len(market.arbitrage_events), 12)
+        self.assertEqual(len(market.orphan_events), 0)
+
+    def test_correct_number_of_arbs_partial_pairing_1(self):
+        """Are all pairs of arbs created when there are partial pairings present?"""
+        del self.event_list[0][5]
+        market = arbitrage.Market(self.event_list)
+        self.assertEqual(len(market.arbitrage_events), 11)
+        self.assertEqual(len(market.orphan_events), 1)
+
+    def test_correct_number_of_arbs_partial_pairing_2(self):
+        """Are all pairs of arbs created when there are partial pairings present?"""
+        del self.event_list[0][5]
+        del self.event_list[1][6]
+        market = arbitrage.Market(self.event_list)
+        self.assertEqual(len(market.arbitrage_events), 10)
+        self.assertEqual(len(market.orphan_events), 2)
+
+    def test_correct_number_of_possible_arbs_full_pairing(self):
+        """Are arbs correctly identified?"""
+        market = arbitrage.Market(self.event_list)
+        self.assertEqual(len(market.possible_arb_list), 0)
+
+        self.event_list[0][2].win_odds = 20
+        self.event_list[1][2].lose_odds = 20
+        market2 = arbitrage.Market(self.event_list)
+        self.assertEqual(len(market2.possible_arb_list), 1)
+
+
+
+
