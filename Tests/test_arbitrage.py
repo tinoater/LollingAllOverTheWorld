@@ -162,16 +162,16 @@ class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
 
         self.assertEqual(t.events[1].p1, "Blackpool")
         self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, 3)
-        self.assertEqual(t.events[1].p2_ind, 10)
+        self.assertEqual(t.events[1].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[1].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[1].win_odds, 5.82)
         self.assertEqual(t.events[1].lose_odds, 1.625)
 
         # Just to make sure
         self.assertEqual(t.events[0].p1, "Blackpool")
         self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, 3)
-        self.assertEqual(t.events[0].p2_ind, 10)
+        self.assertEqual(t.events[0].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[0].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[0].win_odds, 2.1)
         self.assertEqual(t.events[0].lose_odds, 2.5)
 
@@ -181,23 +181,23 @@ class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
 
         self.assertEqual(t.events[2].p1, "Blackpool")
         self.assertEqual(t.events[2].p2, "Doncaster")
-        self.assertEqual(t.events[2].p1_ind, 3)
-        self.assertEqual(t.events[2].p2_ind, 10)
+        self.assertEqual(t.events[2].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[2].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[2].win_odds, 5.82)
         self.assertEqual(t.events[2].lose_odds, 1.625)
 
         # Confirm first two have not been reordered too
         self.assertEqual(t.events[0].p1, "Blackpool")
         self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, 3)
-        self.assertEqual(t.events[0].p2_ind, 10)
+        self.assertEqual(t.events[0].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[0].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[0].win_odds, 2.1)
         self.assertEqual(t.events[0].lose_odds, 2.5)
 
         self.assertEqual(t.events[1].p1, "Blackpool")
         self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, 3)
-        self.assertEqual(t.events[1].p2_ind, 10)
+        self.assertEqual(t.events[1].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[1].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[1].win_odds, 2.9)
         self.assertEqual(t.events[1].lose_odds, 2.5)
 
