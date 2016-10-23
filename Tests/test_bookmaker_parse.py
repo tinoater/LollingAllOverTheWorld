@@ -10,7 +10,7 @@ class Eight88FootballMatchPageTestCase(unittest.TestCase):
     """Tests for Eight88FootballMatchPage class in arbitrage.py."""
 
     def test_constants(self):
-        self.assertEqual(self.page.bookmaker, "888")
+        self.assertEqual(self.page.bookmaker, "EIGHT88")
         self.assertEqual(self.page.sport, "FOOTBALL")
         self.assertEqual(self.page.category, "League Two")
 
@@ -33,7 +33,7 @@ class Eight88FootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = arbitrage.get_page_source_file("888_Football_L2.txt")
-        self.page = arbitrage.Eight88FootballMatchPage(self.html_soup)
+        self.page = arbitrage.BettingPage(self.html_soup, "EIGHT88", "FOOTBALL")
 
 
 # ------------------------------------
@@ -66,7 +66,7 @@ class PaddyPowerFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = arbitrage.get_page_source_file("Paddy_Football_L2.txt")
-        self.page = arbitrage.PaddyPowerFootballMatchPage(self.html_soup)
+        self.page = arbitrage.BettingPage(self.html_soup, "PADDYPOWER", "FOOTBALL")
 
 
 # ------------------------------------
@@ -99,4 +99,37 @@ class PinnacleFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = arbitrage.get_page_source_file("Pinnacle_Football_PL.txt")
-        self.page = arbitrage.PinnacleFootballMatchPage(self.html_soup)
+        self.page = arbitrage.BettingPage(self.html_soup, "PINNACLE", "FOOTBALL")
+
+
+# ------------------------------------
+# WilliamHillFootballMatchPage class tests
+# ------------------------------------
+class WilliamHillFootballMatchPageTestCase(unittest.TestCase):
+    """Tests for WilliamHillFootballMatchPage class in arbitrage.py."""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "WILLIAMHILL")
+        self.assertEqual(self.page.sport, "FOOTBALL")
+        self.assertEqual(self.page.category, "English Premier League")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.betting_events), 9)
+
+    def test_betting_event_correct_first(self):
+        self.assertEqual(self.page.betting_events[0].p1, "Sunderland")
+        self.assertEqual(self.page.betting_events[0].p2, "Arsenal")
+        self.assertEqual(self.page.betting_events[0].win_odds, 7)
+        self.assertEqual(self.page.betting_events[0].draw_odds, 4.4)
+        self.assertEqual(self.page.betting_events[0].lose_odds, 1.33333)
+
+    def test_betting_event_correct_last(self):
+        self.assertEqual(self.page.betting_events[8].p1, "Southampton")
+        self.assertEqual(self.page.betting_events[8].p2, "Chelsea")
+        self.assertEqual(self.page.betting_events[8].win_odds, 3.1)
+        self.assertEqual(self.page.betting_events[8].draw_odds, 3.1)
+        self.assertEqual(self.page.betting_events[8].lose_odds, 2.1)
+
+    def setUp(self):
+        self.html_soup = arbitrage.get_page_source_file("WilliamHill_Football_PL.txt")
+        self.page = arbitrage.BettingPage(self.html_soup, "WILLIAMHILL", "FOOTBALL")

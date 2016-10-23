@@ -296,10 +296,12 @@ class MarketTestCase(unittest.TestCase):
     """Tests for Market class in arbitrage.py."""
     def setUp(self):
         self.event_list = []
-        self.paddy = arbitrage.PaddyPowerFootballMatchPage(
-            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\Paddy_Football_L2.txt"))
-        self.eee = arbitrage.Eight88FootballMatchPage(
-            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\888_Football_L2.txt"))
+        self.paddy = arbitrage.BettingPage(
+            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\Paddy_Football_L2.txt"),
+        "PADDYPOWER", "FOOTBALL")
+        self.eee = arbitrage.BettingPage(
+            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\888_Football_L2.txt"),
+        "888", "FOOTBALL")
 
         self.event_list.append(self.paddy.betting_events)
         self.event_list.append(self.eee.betting_events)
