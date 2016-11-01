@@ -836,7 +836,7 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
             file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, category + ".txt")
 
             # Get the soup from file (if it exists) or get it from the website
-            html_soup = get_page_source(file_path=file_path, url=url, ignore_files=ignore_files)
+            html_soup = get_page_source(file_path=file_path, url=url, ignore_files=ignore_files, sleep_time=5)
             # Create the class from the soup
             page = BettingPage(html_soup, bet_provider, "FOOTBALL")
 
