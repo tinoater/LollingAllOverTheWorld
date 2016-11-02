@@ -47,7 +47,7 @@ WILLIAMHILL_DICT,DICTIONARY,{"Bookmaker": "WilliamHill",
 
 FOOTBALL_DICT,DICTIONARY,{"Arsenal": 1,
                  "Bournemouth": 2,
-                 "Bournemouth AFC" : 2,
+                 "Bournemouth AFC": 2,
                  "Burnley": 3,
                  "Chelsea": 4,
                  "Crystal Palace": 5,

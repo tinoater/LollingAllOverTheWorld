@@ -1,10 +1,6 @@
 import os
 import warnings
 import copy
-from bs4 import BeautifulSoup
-from contextlib import closing
-from selenium import webdriver
-import time
 
 # TODO: Add in more bookies
 
@@ -14,7 +10,7 @@ import time
 
 
 class BettingEvent:
-    def __init__(self, bookmaker, sport, category, name, p1, p2, win_odds, lose_odds, draw_odds=None):
+    def __init__(self, bookmaker, sport, category, name, p1, p2, win_odds, lose_odds, draw_odds=None, IDENTITY_DICT=None):
         self.bookmaker = bookmaker
         self.sport = sport
         self.category = category
@@ -28,6 +24,14 @@ class BettingEvent:
         else:
             self.draw_odds = None
 
+        if IDENTITY_DICT is not None:
+            self.use_identity_dict = True
+            self.identity_dict = IDENTITY_DICT
+        else:
+            self.use_identity_dict = False
+            self.identity_dict = dict()
+            self.identity_dict[''] = 0
+
         self.set_player_inds()
 
     def __str__(self):
@@ -38,12 +42,32 @@ class BettingEvent:
         return output
 
     def set_player_inds(self):
-        try:
-            if self.sport == "FOOTBALL":
-                self.p1_ind = FOOTBALL_DICT[self.p1]
-                self.p2_ind = FOOTBALL_DICT[self.p2]
-        except KeyError:
-            raise KeyError("Player not found in dictionary")
+        """
+        Map the text players into standardised integers
+
+        If a IDENTITY_DICT is passed in then use that and error when not found. Otherwise construct dictionary
+        as each new player is found
+        """
+        if self.use_identity_dict:
+            try:
+                if self.sport == "FOOTBALL":
+                    self.p1_ind = self.identity_dict[self.p1]
+                    self.p2_ind = self.identity_dict[self.p2]
+            except KeyError:
+                raise KeyError("Player not found in dictionary")
+        else:
+            try:
+                self.p1_ind = self.identity_dict[self.p1]
+            except KeyError:
+                self.identity_dict[self.p1] = max(self.identity_dict.values()) + 1
+                self.p1_ind = self.identity_dict[self.p1]
+
+            try:
+                self.p2_ind = self.identity_dict[self.p2]
+            except KeyError:
+                self.identity_dict[self.p2] = max(self.identity_dict.values()) + 1
+                self.p2_ind = self.identity_dict[self.p2]
+
 
     def translate_odds(self, odds):
         try:
@@ -237,12 +261,13 @@ class Market:
 
 
 class BettingPage:
-    def __init__(self, url_soup, bookmaker, sport):
+    def __init__(self, url_soup, bookmaker, sport, IDENTITY_DICT=None):
         self.bookmaker = bookmaker
         self.sport = sport
         self.url_soup = url_soup
         self.category = None
         self.betting_events = []
+        self.identity_dict = IDENTITY_DICT
 
         if bookmaker == "PINNACLE":
             # Note that some of these are empty
@@ -291,7 +316,7 @@ class BettingPage:
                 name = player_list[0] + " v " + player_list[1]
 
                 event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                         , win, lose, draw_odds=draw)
+                         , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
                 self.betting_events.append(event)
         elif bookmaker == "EIGHT88":
@@ -328,7 +353,7 @@ class BettingPage:
                     lose = odds_list[2].text
 
                 event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                         , win, lose, draw_odds=draw)
+                         , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
                 self.betting_events.append(event)
         elif bookmaker == "PADDYPOWER":
@@ -368,7 +393,7 @@ class BettingPage:
                     lose = odds[2].text.replace("\t", "").replace("\n", "")
 
                 event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                                     , win, lose, draw_odds=draw)
+                                     , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
                 self.betting_events.append(event)
         elif bookmaker == "WILLIAMHILL":
@@ -395,79 +420,10 @@ class BettingPage:
                 draw = tr_rows[5].text.replace("\t", "").replace("\n", "")
                 lose = tr_rows[6].text.replace("\t", "").replace("\n", "")
 
-                event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose, draw_odds=draw)
+                event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
+                                     draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
                 self.betting_events.append(event)
-
-
-def get_page_source_url(url, out_file_path=None, sleep_time=5):
-    """
-    Get page html (including javascript generated elements)
-    :param url: Full url (including http://)
-    :param out_file_path: Full path to output file (if wanted)
-    :param sleep_time: Time in seconds to wait for JS to load
-    :return: BeautifulSoup object
-    """
-    with closing(webdriver.Chrome(WEBDRIVER_PATH)) as browser:
-        browser.get(url)
-        # wait for the page to load
-        time.sleep(sleep_time)
-        page_source = browser.page_source.encode("ascii", errors="ignore").decode()
-
-    html_soup = BeautifulSoup(page_source, "lxml")
-
-    if out_file_path is not None:
-        if not os.path.exists(os.path.dirname(out_file_path)):
-            os.makedirs(os.path.dirname(out_file_path))
-        out_file = open(out_file_path, "w")
-        out_file.write(page_source)
-        out_file.close()
-
-    return html_soup
-
-
-def get_page_source_file(file_path):
-    """
-    Return html soup from a html file
-    :param file_path:
-    :return: BeautifulSoup object
-    """
-    with open(file_path) as my_file:
-        html = my_file.read()
-        html_soup = BeautifulSoup(html, "lxml")
-
-    return html_soup
-
-
-def get_page_source(file_path=None, url=None, sleep_time=5, ignore_files=False):
-    if file_path is not None:
-        from_file = True
-    else:
-        from_file = False
-
-    if url is not None:
-        from_url = True
-    else:
-        from_url = False
-
-    if ignore_files:
-        from_file = False
-        from_url = True
-
-    if from_file:
-        # Check if the file_path exists
-        try:
-            html_soup = get_page_source_file(file_path)
-            return html_soup
-        except FileNotFoundError:
-            if not from_url:
-                raise FileNotFoundError("File not found, specify URL instead")
-
-    if from_url:
-        html_soup = get_page_source_url(url, file_path, sleep_time)
-        return html_soup
-    else:
-        return None
 
 
 def adding_a_new_bookmaker():

@@ -1,6 +1,8 @@
 import unittest
 
 import arbitrage
+import mwutils
+import os
 
 
 # ------------------------
@@ -32,9 +34,10 @@ class BettingEventFractionalOddsTestCase(unittest.TestCase):
         win_odds = "5/2"
         lose_odds = "5 / 2"
         draw_odds = "5  \t / \t   2"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event = arbitrage.BettingEvent(bookmaker, sport, category,
                                             name, p1, p2, win_odds, lose_odds,
-                                            draw_odds)
+                                            draw_odds, IDENTITY_DICT=c.FOOTBALL_DICT)
 
 
 class BettingEventDecimalOddsTestCase(unittest.TestCase):
@@ -63,9 +66,10 @@ class BettingEventDecimalOddsTestCase(unittest.TestCase):
         win_odds = 2.55515151
         lose_odds = 1
         draw_odds = "0.156666"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event = arbitrage.BettingEvent(bookmaker, sport, category,
                                             name, p1, p2, win_odds, lose_odds,
-                                            draw_odds)
+                                            draw_odds, IDENTITY_DICT=c.FOOTBALL_DICT)
 
 
 class BettingEventEvensTestCase(unittest.TestCase):
@@ -89,8 +93,9 @@ class BettingEventEvensTestCase(unittest.TestCase):
 
         win_odds = "evens"
         lose_odds = "EVENS"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event = arbitrage.BettingEvent(bookmaker, sport, category,
-                                            name, p1, p2, win_odds, lose_odds)
+                                            name, p1, p2, win_odds, lose_odds, IDENTITY_DICT=c.FOOTBALL_DICT)
 
 
 
@@ -114,8 +119,9 @@ class BettingEventEvensTestCase(unittest.TestCase):
 
         win_odds = "evens"
         lose_odds = "EVENS"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event = arbitrage.BettingEvent(bookmaker, sport, category,
-                                            name, p1, p2, win_odds, lose_odds)
+                                            name, p1, p2, win_odds, lose_odds, IDENTITY_DICT=c.FOOTBALL_DICT)
 
 
 class BettingEventPlayerIndTestCase(unittest.TestCase):
@@ -124,15 +130,19 @@ class BettingEventPlayerIndTestCase(unittest.TestCase):
     def test_player_ind_in_dictionary(self):
         """Are teams in the dictionary found correctly?"""
         self.p2 = "Luton"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event = arbitrage.BettingEvent(self.bookmaker, self.sport, self.category,
-                                            self.name, self.p1, self.p2, self.win_odds, self.lose_odds)
-        self.assertEqual(self.event.p1_ind, arbitrage.FOOTBALL_DICT['Barnet'])
+                                            self.name, self.p1, self.p2, self.win_odds, self.lose_odds,
+                                            IDENTITY_DICT=c.FOOTBALL_DICT)
+        self.assertEqual(self.event.p1_ind, c.FOOTBALL_DICT['Barnet'])
 
     def test_player_ind_not_in_dictionary(self):
         """Are teams not in the dictionary raised?"""
         self.p2 = "This aint in no dictionary"
+        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.assertRaises(KeyError, lambda: arbitrage.BettingEvent(self.bookmaker, self.sport, self.category,
-                                            self.name, self.p1, self.p2, self.win_odds, self.lose_odds))
+                                            self.name, self.p1, self.p2, self.win_odds, self.lose_odds,
+                                                                   IDENTITY_DICT=c.FOOTBALL_DICT))
 
     def setUp(self):
         self.bookmaker = "Dummy bookmaker"
@@ -162,16 +172,16 @@ class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
 
         self.assertEqual(t.events[1].p1, "Blackpool")
         self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[1].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
+        self.assertEqual(t.events[1].p1_ind, self.c.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[1].p2_ind, self.c.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[1].win_odds, 5.82)
         self.assertEqual(t.events[1].lose_odds, 1.625)
 
         # Just to make sure
         self.assertEqual(t.events[0].p1, "Blackpool")
         self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[0].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
+        self.assertEqual(t.events[0].p1_ind, self.c.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[0].p2_ind, self.c.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[0].win_odds, 2.1)
         self.assertEqual(t.events[0].lose_odds, 2.5)
 
@@ -181,33 +191,34 @@ class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
 
         self.assertEqual(t.events[2].p1, "Blackpool")
         self.assertEqual(t.events[2].p2, "Doncaster")
-        self.assertEqual(t.events[2].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[2].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
+        self.assertEqual(t.events[2].p1_ind, self.c.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[2].p2_ind, self.c.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[2].win_odds, 5.82)
         self.assertEqual(t.events[2].lose_odds, 1.625)
 
         # Confirm first two have not been reordered too
         self.assertEqual(t.events[0].p1, "Blackpool")
         self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[0].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
+        self.assertEqual(t.events[0].p1_ind, self.c.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[0].p2_ind, self.c.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[0].win_odds, 2.1)
         self.assertEqual(t.events[0].lose_odds, 2.5)
 
         self.assertEqual(t.events[1].p1, "Blackpool")
         self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, arbitrage.FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[1].p2_ind, arbitrage.FOOTBALL_DICT['Doncaster'])
+        self.assertEqual(t.events[1].p1_ind, self.c.FOOTBALL_DICT['Blackpool'])
+        self.assertEqual(t.events[1].p2_ind, self.c.FOOTBALL_DICT['Doncaster'])
         self.assertEqual(t.events[1].win_odds, 2.9)
         self.assertEqual(t.events[1].lose_odds, 2.5)
 
     def setUp(self):
+        self.c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.1, 2.5, 1.65)
+                           2.1, 2.5, 1.65, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.two = arbitrage.BettingEvent("PaddyPower", "FOOTBALL", "L2", "Blackpool v Doncaster", "Doncaster", "Blackpool",
-                           1.625, 5.82, 1.5)
+                           1.625, 5.82, 1.5, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.9, 2.5, 1.25)
+                           2.9, 2.5, 1.25, IDENTITY_DICT=self.c.FOOTBALL_DICT)
 
 
 class ArbitrageEventBestOddsTestCase(unittest.TestCase):
@@ -222,12 +233,13 @@ class ArbitrageEventBestOddsTestCase(unittest.TestCase):
         self.assertEqual(self.arb.win_bookmaker, 2)
 
     def setUp(self):
+        self.c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.1, 2.5, 1.65)
+                           2.1, 2.5, 1.65, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.two = arbitrage.BettingEvent("PaddyPower", "FOOTBALL", "L2", "Blackpool v Doncaster", "Blackpool", "Doncaster",
-                           1.625, 5.82, 1.5)
+                           1.625, 5.82, 1.5, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.9, 2.5, 1.25)
+                           2.9, 2.5, 1.25, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.arb = arbitrage.ArbitrageEvent([self.one, self.two, self.three])
 
 
@@ -251,12 +263,13 @@ class ArbitrageEventArbPercentageNoArbTestCase(unittest.TestCase):
         self.assertEqual(self.arb.arb_present, False)
 
     def setUp(self):
+        self.c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.1, 2.5, 1.65)
+                           2.1, 2.5, 1.65, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.two = arbitrage.BettingEvent("PaddyPower", "FOOTBALL", "L2", "Blackpool v Doncaster", "Blackpool", "Doncaster",
-                           1.625, 5.82, 1.5)
+                           1.625, 5.82, 1.5, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.9, 2.5, 1.25)
+                           2.9, 2.5, 1.25, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.arb = arbitrage.ArbitrageEvent([self.one, self.two, self.three])
 
 
@@ -280,12 +293,13 @@ class ArbitrageEventArbPercentageArbTestCase(unittest.TestCase):
         self.assertEqual(self.arb.arb_present, True)
 
     def setUp(self):
+        self.c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.1, 5.82, 1.65)
+                           2.1, 5.82, 1.65, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.two = arbitrage.BettingEvent("PaddyPower", "FOOTBALL", "L2", "Blackpool v Doncaster", "Blackpool", "Doncaster",
-                           1.625, 5.82, 5.5)
+                           1.625, 5.82, 5.5, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.9, 2.5, 1.25)
+                           2.9, 2.5, 1.25, IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.arb = arbitrage.ArbitrageEvent([self.one, self.two, self.three])
 
 
@@ -295,13 +309,16 @@ class ArbitrageEventArbPercentageArbTestCase(unittest.TestCase):
 class MarketTestCase(unittest.TestCase):
     """Tests for Market class in arbitrage.py."""
     def setUp(self):
+        self.c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.event_list = []
         self.paddy = arbitrage.BettingPage(
-            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\Paddy_Football_L2.txt"),
-        "PADDYPOWER", "FOOTBALL")
+            mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                      "Paddy_Football_L2.txt")),
+        "PADDYPOWER", "FOOTBALL", IDENTITY_DICT=self.c.FOOTBALL_DICT)
         self.eee = arbitrage.BettingPage(
-            arbitrage.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\888_Football_L2.txt"),
-        "888", "FOOTBALL")
+            mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                      "888_Football_L2.txt")),
+        "EIGHT88", "FOOTBALL", IDENTITY_DICT=self.c.FOOTBALL_DICT)
 
         self.event_list.append(self.paddy.betting_events)
         self.event_list.append(self.eee.betting_events)
