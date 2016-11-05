@@ -3,6 +3,7 @@ import unittest
 import mwutils
 import arbitrage
 import os
+from config import *
 
 
 # ------------------------------------
@@ -34,9 +35,8 @@ class Eight88FootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(self.page.betting_events[11].lose_odds, 3.4)
 
     def setUp(self):
-        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.html_soup = mwutils.get_page_source_file("888_Football_L2.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "EIGHT88", "FOOTBALL", IDENTITY_DICT=c.FOOTBALL_DICT)
+        self.page = arbitrage.BettingPage(self.html_soup, "EIGHT88", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
 
 
 # ------------------------------------
@@ -68,9 +68,8 @@ class PaddyPowerFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(self.page.betting_events[11].lose_odds, 3.4)
 
     def setUp(self):
-        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.html_soup = mwutils.get_page_source_file("Paddy_Football_L2.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "PADDYPOWER", "FOOTBALL", IDENTITY_DICT=c.FOOTBALL_DICT)
+        self.page = arbitrage.BettingPage(self.html_soup, "PADDYPOWER", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
 
 
 # ------------------------------------
@@ -102,9 +101,8 @@ class PinnacleFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(self.page.betting_events[10].lose_odds, 4.320)
 
     def setUp(self):
-        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.html_soup = mwutils.get_page_source_file("Pinnacle_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "PINNACLE", "FOOTBALL", IDENTITY_DICT=c.FOOTBALL_DICT)
+        self.page = arbitrage.BettingPage(self.html_soup, "PINNACLE", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
 
 
 # ------------------------------------
@@ -136,6 +134,5 @@ class WilliamHillFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(self.page.betting_events[8].lose_odds, 2.1)
 
     def setUp(self):
-        c = mwutils.Constants(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.const"))
         self.html_soup = mwutils.get_page_source_file("WilliamHill_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "WILLIAMHILL", "FOOTBALL", IDENTITY_DICT=c.FOOTBALL_DICT)
+        self.page = arbitrage.BettingPage(self.html_soup, "WILLIAMHILL", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)

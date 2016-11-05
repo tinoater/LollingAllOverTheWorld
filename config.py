@@ -1,16 +1,20 @@
-WEBDRIVER_PATH,STRING,"F:\Coding\PycharmProjects\Arbitrage\chromedriver.exe"
-ARBITRAGE_PATH,STRING,"F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles"
-RESULTS_PATH,STRING,"F:\Coding\PycharmProjects\Arbitrage\Results"
-SUMMARY_RESULTS_PATH,STRING,"F:\Coding\PycharmProjects\Arbitrage\SummaryResults"
+WEBDRIVER_PATH = "F:\Coding\PycharmProjects\Arbitrage\chromedriver.exe"
+ARBITRAGE_PATH = "F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles"
+RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\Results"
+SUMMARY_RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\SummaryResults"
 
-BOOKMAKERS_LIST,DICTIONARY,{"EIGHT88": 0,
+SLEEP_TIME = 3
+
+BOOKMAKERS_LIST = {"EIGHT88": 0,
                    "PADDYPOWER": 1,
-#                  "PINNACLE": 2,
+                   # "PINNACLE": 2,
                    "WILLIAMHILL": 3
                    }
 
+CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
+                 "Football_GeBun"]
 
-EIGHT88_DICT,DICTIONARY,{"Bookmaker": "888",
+EIGHT88_DICT = {"Bookmaker": "888",
                 "Football_L2": "https://www.888sport.com/bet/#/filter/football/england/league_two",
                 "Football_L1": "https://www.888sport.com/bet/#/filter/football/england/league_one",
                 "Football_C": "https://www.888sport.com/bet/#/filter/football/england/the_championship",
@@ -20,7 +24,7 @@ EIGHT88_DICT,DICTIONARY,{"Bookmaker": "888",
                 "Football_GeBun": "https://www.888sport.com/bet/#/filter/football/germany/bundesliga"
                 }
 
-PADDY_DICT,DICTIONARY,{"Bookmaker": "PaddyPower",
+PADDY_DICT = {"Bookmaker": "PaddyPower",
               "Football_L2": "http://www.paddypower.com/football/football-matches/english-league-2",
               "Football_L1": "http://www.paddypower.com/football/football-matches/english-league-1",
               "Football_PL": "http://www.paddypower.com/football/football-matches/premier-league",
@@ -29,14 +33,14 @@ PADDY_DICT,DICTIONARY,{"Bookmaker": "PaddyPower",
               "Football_GeBun": "http://www.paddypower.com/football/football-matches/Germany-Bundesliga-1"
               }
 
-PINNACLE_DICT,DICTIONARY,{"Bookmaker": "Pinnacle",
+PINNACLE_DICT = {"Bookmaker": "Pinnacle",
                  "Football_PL": "https://www.pinnacle.com/en/odds/match/soccer/england/england-premier-league?sport=True",
                  "Football_C": "https://www.pinnacle.com/en/odds/match/soccer/england/england-championship",
                  "Football_L1": "https://www.pinnacle.com/en/odds/match/soccer/england/england-league-1",
                  "Football_CL": "https://www.pinnacle.com/en/odds/match/soccer/uefa/uefa-champions-league"
                  }
 
-WILLIAMHILL_DICT,DICTIONARY,{"Bookmaker": "WilliamHill",
+WILLIAMHILL_DICT = {"Bookmaker": "WilliamHill",
                     "Football_PL": "http://sports.williamhill.com/bet/en-gb/betting/t/295/English+Premier+League.html",
                     "Football_C": "http://sports.williamhill.com/bet/en-gb/betting/t/292/English+Championship.html",
                     "Football_L1": "http://sports.williamhill.com/bet/en-gb/betting/t/293/English+League+1.html",
@@ -45,7 +49,7 @@ WILLIAMHILL_DICT,DICTIONARY,{"Bookmaker": "WilliamHill",
                     "Football_GeBun": "http://sports.williamhill.com/bet/en-gb/betting/t/315/German+Bundesliga.html"
                    }
 
-FOOTBALL_DICT,DICTIONARY,{"Arsenal": 1,
+FOOTBALL_DICT = {"Arsenal": 1,
                  "Bournemouth": 2,
                  "Bournemouth AFC": 2,
                  "Burnley": 3,
@@ -309,3 +313,9 @@ FOOTBALL_DICT,DICTIONARY,{"Arsenal": 1,
                  "Darmstadt 98": 467,
                  "Darmstadt": 467
                  }
+
+BOOKMAKERS = [EIGHT88_DICT,
+              PADDY_DICT,
+              PINNACLE_DICT,
+              WILLIAMHILL_DICT
+              ]
