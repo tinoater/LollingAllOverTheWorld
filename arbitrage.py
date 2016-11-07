@@ -2,6 +2,7 @@ import os
 import warnings
 import copy
 import math
+import mwutils as mu
 
 
 class BettingEvent:
@@ -342,6 +343,8 @@ class BettingPage:
             except IndexError:
                 warnings.warn("No odds found")
                 pass
+        elif bookmaker == "SPORTINGBET":
+            self.parse_sportingbet()
 
     def parse_pinnacle(self):
         # Note that some of these are empty
@@ -503,21 +506,31 @@ class BettingPage:
 
             self.betting_events.append(event)
 
+    def parse_sportingbet(self):
+        # Get the rows from the page
+        self.rows = self.html_soup.findAll('div', {"class": "event active"})
 
-def adding_a_new_bookmaker():
-    # Get an example page source of theirs and save it in the tests folder
-    # get_page_source_url("http://sports.williamhill.com/bet/en-gb/betting/t/295/English+Premier+League.html",
-    #                     out_file_path="F:\Coding\PycharmProjects\Arbitrage\Tests\WilliamHill_Football_PL.txt")
+        # Extract information from page
+        banner = self.html_soup.findAll('div', {"id": "content"})[0].findAll('div', {"class": "breadcrumb"})[0]
+        self.category = banner.findAll("strong")[0].text
 
-    # Create a new test for them to read the data from the file
-    # This follows exactly the form of the other ones
+        print(self.category)
 
-    # Create the new class and check the tests pass
-    # soup = get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\WilliamHill_Football_PL.txt")
-    # thing = BettingPage(soup, "WILLIAMHILL", "FOOTBALL")
+        for each in self.rows:
+            datetime = each.findAll("span", {"class": "StartTime"})[0].text.replace("\t", "").replace("\n", "")
+            name = each.findAll("div", {"class": "eventName"})[0].text.replace("\t", "").replace("\n", "")
+            p1, p2 = name.split(" v ")
+            p1 = p1.strip()
+            p2 = p2.strip()
+            win = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds home active"})[0].\
+                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+            draw = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds draw active"})[0].\
+                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+            lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
+                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
 
-    # Add to the dictionaries
+            event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
+                                 draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
-    # Add to the if statement in calc_arbs_for_date
-    pass
+            self.betting_events.append(event)
 

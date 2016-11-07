@@ -80,12 +80,27 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     out_file.close()
 
 
+def adding_a_new_bookmaker():
+    # Get an example page source of theirs and save it in the tests folder
+    # mu.get_page_source_url("http://www.sportingbet.com/sports-football/england-premier-league/1-102-386195.html",
+    #                        WEBDRIVER_PATH,
+    #                        out_file_path="F:\Coding\PycharmProjects\Arbitrage\Tests\SportingBet_Football_PL.txt")
+
+    # Create a new test for them to read the data from the file
+    # This follows exactly the form of the other ones
+
+    # Create the new class and check the tests pass
+    # soup = get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\Tests\WilliamHill_Football_PL.txt")
+    # thing = BettingPage(soup, "WILLIAMHILL", "FOOTBALL")
+
+    # Add to the dictionaries
+
+    # Add to the if statement in calc_arbs_for_date
+    pass
+
+
 def debug():
-    soup = mu.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles\888\\2016_11_05_18\Football_GeBun.txt")
-    page = arbitrage.BettingPage(soup, "EIGHT88", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
-    arb = arbitrage.ArbitrageEvent([page.betting_events[0]])
-    m = arbitrage.Market([page.betting_events])
-    print(str(len(m.arbitrage_events)))
+    adding_a_new_bookmaker()
 
 
 if __name__ == "__main__":
