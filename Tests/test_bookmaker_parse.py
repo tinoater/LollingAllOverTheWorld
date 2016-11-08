@@ -169,3 +169,36 @@ class SportingBetFootballMatchPageTestCase(unittest.TestCase):
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("SportingBet_Football_PL.txt")
         self.page = arbitrage.BettingPage(self.html_soup, "SPORTINGBET", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
+
+
+# ------------------------------------
+# MarathonBetFootballMatchPage class tests
+# ------------------------------------
+class MarathonBetFootballMatchPageTestCase(unittest.TestCase):
+    """Tests for MarathonBetFootballMatchPage class in arbitrage.py."""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "MARATHONBET")
+        self.assertEqual(self.page.sport, "FOOTBALL")
+        self.assertEqual(self.page.category, "England. Premier League")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.betting_events), 30)
+
+    def test_betting_event_correct_first(self):
+        self.assertEqual(self.page.betting_events[0].p1, "Manchester United")
+        self.assertEqual(self.page.betting_events[0].p2, "Arsenal")
+        self.assertEqual(self.page.betting_events[0].win_odds, 2.75)
+        self.assertEqual(self.page.betting_events[0].draw_odds, 3.32)
+        self.assertEqual(self.page.betting_events[0].lose_odds, 2.85)
+
+    def test_betting_event_correct_last(self):
+        self.assertEqual(self.page.betting_events[29].p1, "Middlesbrough")
+        self.assertEqual(self.page.betting_events[29].p2, "Hull City")
+        self.assertEqual(self.page.betting_events[29].win_odds, 1.83)
+        self.assertEqual(self.page.betting_events[29].draw_odds, 3.7)
+        self.assertEqual(self.page.betting_events[29].lose_odds, 5)
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("MarathonBet_Football_PL.txt")
+        self.page = arbitrage.BettingPage(self.html_soup, "MARATHONBET", "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)

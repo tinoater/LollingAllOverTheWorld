@@ -4,6 +4,9 @@ import mwutils as mu
 import arbitrage
 from config import *
 
+# TODO: Add in the SportingBet Test file
+# TODO: Make the config path relative
+# TODO: Include the chromedriver files for linux and windows
 
 # TODO: Add in more bookies
 
@@ -73,18 +76,20 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     out_file.write("Total Orphans: " + str(orphan_count) + "\n")
     out_file.write("Arbs found: " + str(len(all_arbs)) + "\n")
 
+    all_arbs.sort(key=lambda x: x.arb_perc)
+
     for each in all_arbs:
         out_file.write(str(each))
-        out_file.write("\n")
+        out_file.write("\n------------\n")
 
     out_file.close()
 
 
 def adding_a_new_bookmaker():
     # Get an example page source of theirs and save it in the tests folder
-    # mu.get_page_source_url("http://www.sportingbet.com/sports-football/england-premier-league/1-102-386195.html",
+    # mu.get_page_source_url("https://www.marathonbet.co.uk/en/popular/Football/England/Premier+League/?menu=21520",
     #                        WEBDRIVER_PATH,
-    #                        out_file_path="F:\Coding\PycharmProjects\Arbitrage\Tests\SportingBet_Football_PL.txt")
+    #                        out_file_path="/home/bobby/Documents/Arbing/MarathonBet_Football_PL.txt")
 
     # Create a new test for them to read the data from the file
     # This follows exactly the form of the other ones
@@ -94,8 +99,6 @@ def adding_a_new_bookmaker():
     # thing = BettingPage(soup, "WILLIAMHILL", "FOOTBALL")
 
     # Add to the dictionaries
-
-    # Add to the if statement in calc_arbs_for_date
     pass
 
 

@@ -1,7 +1,11 @@
-WEBDRIVER_PATH = "F:\Coding\PycharmProjects\Arbitrage\chromedriver.exe"
-ARBITRAGE_PATH = "F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles"
-RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\Results"
-SUMMARY_RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\SummaryResults"
+#WEBDRIVER_PATH = "F:\Coding\PycharmProjects\Arbitrage\chromedriver.exe"
+WEBDRIVER_PATH = "/home/bobby/Desktop/chromedriver"
+#ARBITRAGE_PATH = "F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles"
+#RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\Results"
+#SUMMARY_RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\SummaryResults"
+ARBITRAGE_PATH = "/home/bobby/Documents/Arbing/Output/ScrapedFiles"
+RESULTS_PATH = "/home/bobby/Documents/Arbing/Output/Results"
+SUMMARY_RESULTS_PATH = "/home/bobby/Documents/Arbing/Output/SummaryResults"
 
 SLEEP_TIME = 3
 
@@ -9,7 +13,8 @@ BOOKMAKERS_LIST = {"EIGHT88": 0,
                    "PADDYPOWER": 1,
                    # "PINNACLE": 2,
                    "WILLIAMHILL": 3,
-                   "SPORTINGBET": 4
+                   "SPORTINGBET": 4,
+                   "MARATHONBET": 5
                    }
 
 CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
@@ -57,7 +62,18 @@ SPORTINGBET_DICT = {"Bookmaker": "SportingBet",
                     "Football_L2": "http://www.sportingbet.com/sports-football/england-league-two/1-102-851968.html",
                     "Football_CL": "http://www.sportingbet.com/sports-football/champions-league-201617-matches/1-102-302288.html",
                     "Football_LaLig": "http://www.sportingbet.com/sports-football/spain-primera-division/1-102-84041.html",
-                    "Football_GeBun": "http://www.sportingbet.com/sports-football/germany-bundesliga/1-102-84042.html"}
+                    "Football_GeBun": "http://www.sportingbet.com/sports-football/germany-bundesliga/1-102-84042.html"
+                   }
+
+MARATHONBET_DICT = {"Bookmaker": "MarathonBet",
+                    "Football_PL": "https://www.marathonbet.co.uk/en/popular/Football/England/Premier+League/?menu=21520",
+                    "Football_C": "https://www.marathonbet.co.uk/en/popular/Football/England/Championship/?menu=22807",
+                    "Football_L1": "https://www.marathonbet.co.uk/en/popular/Football/England/League+1/?menu=22808",
+                    "Football_L2": "https://www.marathonbet.co.uk/en/popular/Football/England/League+2/?menu=22809",
+                    "Football_CL": "https://www.marathonbet.co.uk/en/popular/Football/Clubs.+International/UEFA+Champions+League/?menu=21255",
+                    "Football_LaLig": "https://www.marathonbet.co.uk/en/popular/Football/Spain/Primera+Division/?menu=8736",
+                    "Football_GeBun": "https://www.marathonbet.co.uk/en/popular/Football/Germany/Bundesliga/?menu=22436"
+                    }
 
 FOOTBALL_DICT = {"Arsenal": 1,
                  "Bournemouth": 2,
@@ -271,6 +287,7 @@ FOOTBALL_DICT = {"Arsenal": 1,
                  "Dinamo Zagreb": 428,
                  "Bayer Leerkusen": 429,
                  "Bayer Leverkusen": 429,
+                 "Bayer 04 Leverkusen": 429,
                  "Leverkusen": 429,
                  "Real Madrd": 430,
                  "Sevilla": 431,
@@ -336,5 +353,6 @@ BOOKMAKERS = [EIGHT88_DICT,
               PADDY_DICT,
               PINNACLE_DICT,
               WILLIAMHILL_DICT,
-              SPORTINGBET_DICT
+              SPORTINGBET_DICT,
+              MARATHONBET_DICT
               ]

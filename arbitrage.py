@@ -345,6 +345,8 @@ class BettingPage:
                 pass
         elif bookmaker == "SPORTINGBET":
             self.parse_sportingbet()
+        elif bookmaker == "MARATHONBET":
+            self.parse_marathonbet()
 
     def parse_pinnacle(self):
         # Note that some of these are empty
@@ -533,4 +535,44 @@ class BettingPage:
                                  draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
             self.betting_events.append(event)
+
+
+    def parse_marathonbet(self):
+        # Get the rows from the page
+        self.rows = self.html_soup.findAll("table", {"class": "foot-market"})[0].findAll("tbody", recursive=False)[1:]
+
+        # Extract information from page
+        self.category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
+            text.replace("\n","").replace("\t","")
+
+        print(self.category)
+
+        for each in self.rows:
+            try:
+                datetime = each.findAll("td", {"class": "date"})[0].text.replace("\t", "").replace("\n", "")
+                names = each.findAll("div", {"class": "member-name"})
+                name = names[0].text
+                for player in names[1:]:
+                    name += " v " + player.text
+
+                p1, p2 = name.split(" v ")
+                p1 = p1.strip()
+                p2 = p2.strip()
+
+                all_odds = each.findAll("td", {"class": "height-column-with-price"})
+
+                for odd in all_odds:
+                    if "\"" + p1 + " To Win\"" in odd.attrs['data-sel']:
+                        win = odd.text.replace("\t","").replace("\n","")
+                    if "\"Draw\"" in odd.attrs['data-sel']:
+                        draw = odd.text.replace("\t","").replace("\n","")
+                    if "\"" + p2 + " To Win\"" in odd.attrs['data-sel']:
+                        lose = odd.text.replace("\t","").replace("\n","")
+
+                event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
+                                     draw_odds=draw, IDENTITY_DICT=self.identity_dict)
+
+                self.betting_events.append(event)
+            except KeyError:
+                print("KeyError with MARTAHONBET: " + p1 + " " + p2)
 
