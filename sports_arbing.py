@@ -103,7 +103,7 @@ def debug():
 
 if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d_%H")
-    calc_arbs_for_date(date, category_list=["Football_CL"])
+    calc_arbs_for_date(date)
 
     #debug()
 
