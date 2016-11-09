@@ -1,11 +1,14 @@
-#WEBDRIVER_PATH = "F:\Coding\PycharmProjects\Arbitrage\chromedriver.exe"
-WEBDRIVER_PATH = "/home/bobby/Desktop/chromedriver"
-#ARBITRAGE_PATH = "F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles"
-#RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\Results"
-#SUMMARY_RESULTS_PATH = "F:\Coding\PycharmProjects\Arbitrage\SummaryResults"
-ARBITRAGE_PATH = "/home/bobby/Documents/Arbing/Output/ScrapedFiles"
-RESULTS_PATH = "/home/bobby/Documents/Arbing/Output/Results"
-SUMMARY_RESULTS_PATH = "/home/bobby/Documents/Arbing/Output/SummaryResults"
+import os
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+    WEBDRIVER_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Files\\chromedriver")
+elif platform == "win32":
+    WEBDRIVER_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Files\\chromedriver_win.exe")
+
+ARBITRAGE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ScrapedFiles")
+RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Results")
+SUMMARY_RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "SummaryResults")
 
 SLEEP_TIME = 3
 
@@ -243,12 +246,14 @@ FOOTBALL_DICT = {"Arsenal": 1,
                  "Atletico Madrid": 403,
                  "FC Rostov": 404,
                  "Rostov FK": 404,
+                 "Rostov": 404,
                  "Basel": 405,
                  "FC Basel": 405,
                  "FX Rostov": 404,
                  "FK Rostov": 404,
                  "Paris SG": 407,
                  "Paris Saint Germain": 407,
+                 "Paris Saint-Germain": 407,
                  "PSG": 407,
                  "Benfica": 408,
                  "Dynamo Kiev": 409,
@@ -270,6 +275,7 @@ FOOTBALL_DICT = {"Arsenal": 1,
                  "Borussia Dortmund": 416,
                  "Dortmund": 416,
                  "Sporting Lisbon": 417,
+                 "Sporting Lisboa": 417,
                  "Sporting CP": 417,
                  "FC Copenhagen": 418,
                  "Juventus": 419,
@@ -280,6 +286,7 @@ FOOTBALL_DICT = {"Arsenal": 1,
                  "Legia Warszawa": 422,
                  "Club Brugge": 423,
                  "Club Bruges": 423,
+                 "Brugge": 423,
                  "Real Madrid": 424,
                  "Monaco": 425,
                  "AS Monaco": 425,

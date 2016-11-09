@@ -1,12 +1,7 @@
 import time
-import os
 import mwutils as mu
 import arbitrage
 from config import *
-
-# TODO: Add in the SportingBet Test file
-# TODO: Make the config path relative
-# TODO: Include the chromedriver files for linux and windows
 
 # TODO: Add in more bookies
 
@@ -108,7 +103,7 @@ def debug():
 
 if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d_%H")
-    calc_arbs_for_date(date)
+    calc_arbs_for_date(date, category_list=["Football_CL"])
 
     #debug()
 

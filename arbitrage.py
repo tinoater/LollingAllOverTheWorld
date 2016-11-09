@@ -573,6 +573,6 @@ class BettingPage:
                                      draw_odds=draw, IDENTITY_DICT=self.identity_dict)
 
                 self.betting_events.append(event)
-            except KeyError:
-                print("KeyError with MARTAHONBET: " + p1 + " " + p2)
+            except KeyError as err:
+                print("KeyError with MARTAHONBET: " + p1 + " " + p2 + "\n" + format(err))
 
