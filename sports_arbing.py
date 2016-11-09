@@ -1,12 +1,7 @@
 import time
-import os
 import mwutils as mu
 import arbitrage
 from config import *
-
-# TODO: Add in the SportingBet Test file
-# TODO: Make the config path relative
-# TODO: Include the chromedriver files for linux and windows
 
 # TODO: Add in more bookies
 
