@@ -5,80 +5,93 @@ import math
 import mwutils as mu
 
 
-class BettingEvent:
+class Event:
     """
-    Information for a bettable event. Identifiers, participants and odds
+    Real-world event
     """
-    def __init__(self, bookmaker, sport, category, name, p1, p2, win_odds, lose_odds, draw_odds=None, IDENTITY_DICT=None):
-        self.bookmaker = bookmaker
+    def __init__(self, sport, category, name, attribute, participant_list, identity_dict=None):
         self.sport = sport
         self.category = category
         self.name = name
-        self.p1 = p1
-        self.p2 = p2
-        self.win_odds = self.translate_odds(win_odds)
-        self.lose_odds = self.translate_odds(lose_odds)
-        if draw_odds is not None:
-            self.draw_odds = self.translate_odds(draw_odds)
-        else:
-            self.draw_odds = None
+        self.attribute = attribute
+        self.participants = copy.deepcopy(participant_list)
+        self.participants_std = []
 
-        if IDENTITY_DICT is not None:
-            self.use_identity_dict = True
-            self.identity_dict = IDENTITY_DICT
+        # Set the participants_std from identity_dict if it was passed in
+        if identity_dict is not None:
+            self.identity_dict = identity_dict
+            for participant in self.participants:
+                try:
+                    self.participants_std.append(self.identity_dict[participant])
+                except KeyError:
+                    raise KeyError("Participant not found in dictionary:" + participant)
         else:
-            self.use_identity_dict = False
-            self.identity_dict = dict()
-            self.identity_dict[''] = 0
-
-        self.set_player_inds()
+            self.participants_std = copy.deepcopy(self.participants)
 
     def __str__(self):
-        """
-        William Hill-Football-Premier league
-        Man United v Everton (Man United,Everton)
-        3.1/1.1/2.2
-        :return:
-        """
-        output = self.bookmaker + "-" + self.sport + "-" + self.category + "\n"
-        output += self.name + " (" + self.p1 + "," + self.p2 + ")" + "\n"
-        output += str(round(self.win_odds, 3)) + "/" + str(round(self.draw_odds, 3)) + "/" + str(round(self.lose_odds, 3))
+        output = self.sport + "-" + self.category + "-" + self.name + "\n"
+        output += self.attribute + ":" + ",".join(self.participants_std)
 
         return output
 
-    def set_player_inds(self):
-        """
-        Map the text players into standardised integers
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.sport == other.sport and self.category == other.category and self.attribute == other.attribute:
+                if set(self.participants_std) == set(other.participants_std):
+                    return True
 
-        If a IDENTITY_DICT is passed in then use that and error when not found. Otherwise construct dictionary
-        as each new player is found
-        """
-        if self.use_identity_dict:
-            try:
-                if self.sport == "FOOTBALL":
-                    self.p1_ind = self.identity_dict[self.p1]
-                    self.p2_ind = self.identity_dict[self.p2]
-            except KeyError:
-                raise KeyError("Player not found in dictionary")
-        else:
-            try:
-                self.p1_ind = self.identity_dict[self.p1]
-            except KeyError:
-                self.identity_dict[self.p1] = max(self.identity_dict.values()) + 1
-                self.p1_ind = self.identity_dict[self.p1]
+        return False
 
-            try:
-                self.p2_ind = self.identity_dict[self.p2]
-            except KeyError:
-                self.identity_dict[self.p2] = max(self.identity_dict.values()) + 1
-                self.p2_ind = self.identity_dict[self.p2]
 
-    def translate_odds(self, odds):
+class Odds:
+    """
+    Odds, fractional or decimal, any combination of true, false and null
+    """
+    def __init__(self, true=None, false=None, null=None, true_null=None, false_null=None, true_false=None,
+                 null_possible=True):
+        self.true = self.fractional_to_decimal_odds(true)
+        self.false = self.fractional_to_decimal_odds(false)
+        self.null = self.fractional_to_decimal_odds(null)
+        self.true_null = self.fractional_to_decimal_odds(true_null)
+        self.false_null = self.fractional_to_decimal_odds(false_null)
+        self.true_false = self.fractional_to_decimal_odds(true_false)
+        self.null_possible = null_possible
+
+    def __str__(self):
+        outcome_types_list = []
+        outcome_odds_list = []
+        if self.true is not None:
+            outcome_types_list.append("T")
+            outcome_odds_list.append(str(round(self.true, 2)))
+        if self.false is not None:
+            outcome_types_list.append("F")
+            outcome_odds_list.append(str(round(self.false, 2)))
+        if self.null is not None:
+            outcome_types_list.append("N")
+            outcome_odds_list.append(str(round(self.null, 2)))
+        if self.true_null is not None:
+            outcome_types_list.append("TN")
+            outcome_odds_list.append(str(round(self.true_null, 2)))
+        if self.false_null is not None:
+            outcome_types_list.append("FN")
+            outcome_odds_list.append(str(round(self.false_null, 2)))
+        if self.true_false is not None:
+            outcome_types_list.append("TF")
+            outcome_odds_list.append(str(round(self.true_false, 2)))
+
+        output = "/".join(outcome_types_list) + ":" + "/".join(outcome_odds_list)
+
+        return output
+
+    def fractional_to_decimal_odds(self, odds):
         """
         Convert odds from fractional to decimal
         :param odds:
         :return:
         """
+        if odds is None:
+            return None
+
         try:
             if odds.lower() in ("evens", "evs"):
                 return 1
@@ -93,63 +106,94 @@ class BettingEvent:
             return round((float(num) + float(den))/float(den), 5)
 
 
+class BettingEvent:
+    """
+    Bettable event. Event, Odds and Bookmaker
+    """
+    def __init__(self, event, odds, bookmaker):
+        self.event = event
+        self.odds = odds
+        self.bookmaker = bookmaker
+
+    def __str__(self):
+        """
+        William Hill-Football-Premier league
+        Man United v Everton (Man United,Everton)
+        3.1/1.1/2.2
+        :return:
+        """
+        output = str(self.event) + "\n" + str(self.odds)
+
+        return output
+
+
 class ArbitrageEvent:
     """
     Takes a list of BettingEvents for an event and returns the best arb
     """
+
     def __init__(self, event_list):
-        self.events = event_list
-        self.p1 = event_list[0].p1
-        self.p2 = event_list[0].p2
-        self.p1_ind = event_list[0].p1_ind
-        self.p2_ind = event_list[0].p2_ind
+        if not all(isinstance(be, BettingEvent) for be in event_list):
+            raise ValueError("Inputs must be BettingEvents")
 
-        # Handle case when only one BettingEvent is passed in
-        if len(event_list) > 1:
-            # Determine if pairs are ordered
-            for event in event_list[1:]:
-                if not (event.p1_ind == self.p1_ind and event.p2_ind == self.p2_ind):
-                    # Events are not ordered
-                    # First check they just need to be switches
-                    if event.p1_ind == self.p2_ind and event.p2_ind == self.p1_ind:
-                        # We need to switch the odds and participants
-                        temp = dict()
-                        temp['p1'] = event.p1
-                        temp['p1_ind'] = event.p1_ind
-                        temp['win_odds'] = event.win_odds
-                        temp['lose_odds'] = event.lose_odds
+        self.events = copy.deepcopy(event_list)
+        self.null_possible = self.events[0].odds.null_possible
+        self.true_odds = self.false_odds = self.null_odds = self.true_null_odds \
+            = self.false_null_odds = self.true_false_odds = None
+        self.true_odds_arb = self.false_odds_arb = self.null_odds_arb = self.true_null_odds_arb \
+            = self.false_null_odds_arb = self.true_false_odds_arb = None
+        self.true_odds_bookmakers = self.false_odds_bookmakers = self.null_odds_bokmakers = \
+            self.true_null_odds_bookmakers = self.false_null_odds_bookmakers = self.true_false_odds_bookmakers = None
 
-                        event.p1 = event.p2
-                        event.p1_ind = event.p2_ind
-                        event.p2 = temp['p1']
-                        event.p2_ind = temp['p1_ind']
-                        event.win_odds = temp['lose_odds']
-                        event.lose_odds = temp['win_odds']
-                    else:
-                        # These pairs are just totally wrong
-                        raise ValueError("Events have different participants")
-                else:
-                    pass
+        if len(self.events) == 1:
+            self.events = [self.events]
 
         # Find the best odds
-        temp = [event.win_odds for event in self.events]
-        self.win_odds = max(temp)
-        self.win_bookmaker = [i for i, j in enumerate(temp) if j == self.win_odds][0]
+        odd_vars = ['true', 'false', 'null', 'true_null', 'false_null', 'true_false']
+        # odd_vars = ['true_odds', 'false_odds', 'null_odds', 'true_null_odds', 'false_null_odds', 'true_false_odds']
+        for var in odd_vars:
+            temp = [getattr(event.odds, var) for event in self.events if getattr(event.odds, var) is not None]
+            try:
+                setattr(self, var + "_odds", max(temp))
+            except ValueError:
+                setattr(self, var + "_odds", None)
+                setattr(self, var + "bookmakers", [i for i, j in enumerate(temp) if j == getattr(self, var)])
 
-        temp = [event.lose_odds for event in self.events]
-        self.lose_odds = max(temp)
-        self.lose_bookmaker = [i for i, j in enumerate(temp) if j == self.lose_odds][0]
+        # Calculate Arb odds
+        for var in odd_vars:
+            if getattr(self, var + "_odds") is None:
+                setattr(self, var + "_odds_arb", None)
+            else:
+                setattr(self, var + "_odds_arb", round(1 / getattr(self, var + "_odds"), 5))
 
-        temp = [event.draw_odds for event in self.events]
-        self.draw_odds = max(temp)
-        self.draw_bookmaker = [i for i, j in enumerate(temp) if j == self.draw_odds][0]
+        # Calculate the Arb percentages
+        self.arb_percs = []
 
-        # Calculate Arb percentage
-        self.win_odds_arb = round(1/self.win_odds, 5)
-        self.lose_odds_arb = round(1/self.lose_odds, 5)
-        self.draw_odds_arb = round(1/self.draw_odds, 5)
-        self.arb_perc = round(self.win_odds_arb + self.draw_odds_arb + self.lose_odds_arb, 5)
-        self.arb_perc_profit = round((1-self.arb_perc)/self.arb_perc, 5)
+        if self.null_possible is False:
+            if self.true_odds is not None and self.false_odds is not None:
+                arb_type = "TRUE_FALSE"
+                arb_perc = round(self.true_odds_arb + self.false_odds_arb, 5)
+                self.arb_percs.append([arb_type, arb_perc])
+        else:
+            if self.true_odds is not None and self.false_odds is not None and self.null_odds is not None:
+                arb_type = "TRUE_FALSE_NULL"
+                arb_perc = round(self.true_odds_arb + self.null_odds_arb + self.false_odds_arb, 5)
+                self.arb_percs.append([arb_type, arb_perc])
+            if self.true_odds is not None and self.false_null_odds is not None:
+                arb_type = "TRUE_FALSENULL"
+                arb_perc = round(self.true_odds_arb + self.false_null_odds_arb, 5)
+                self.arb_percs.append([arb_type, arb_perc])
+            if self.false_odds is not None and self.true_null_odds is not None:
+                arb_type = "FALSE_TRUENULL"
+                arb_perc = round(self.false_odds_arb + self.true_null_odds_arb, 5)
+                self.arb_percs.append([arb_type, arb_perc])
+            if self.null_odds is not None and self.true_false_odds is not None:
+                arb_type = "NULL_TRUEFALSE"
+                arb_perc = round(self.null_odds_arb + self.true_false_odds_arb, 5)
+                self.arb_percs.append([arb_type, arb_perc])
+
+        self.arb_type, self.arb_perc = min(self.arb_percs, key=lambda x: x[1])
+        self.arb_perc_profit = round((1 - self.arb_perc) / self.arb_perc, 5)
 
         if self.arb_perc < 1:
             self.arb_present = True
@@ -166,17 +210,20 @@ class ArbitrageEvent:
         output = self.p1 + " win " + str(self.win_odds) + " (" + self.events[self.win_bookmaker].bookmaker + "): " + \
                  str(self.win_odds_arb) + "\n"
         output += "Draw " + str(self.draw_odds) + " (" + self.events[self.draw_bookmaker].bookmaker + "): " + \
-                 str(self.draw_odds_arb) + "\n"
-        output += self.p2 + " win " + str(self.lose_odds) + " (" + self.events[self.lose_bookmaker].bookmaker + "): " + \
-                 str(self.lose_odds_arb)+ "\n"
+                  str(self.draw_odds_arb) + "\n"
+        output += self.p2 + " win " + str(self.lose_odds) + " (" + self.events[
+            self.lose_bookmaker].bookmaker + "): " + \
+                  str(self.lose_odds_arb) + "\n"
         output += str(self.arb_perc)
 
         if self.arb_present:
             win_bet, draw_bet, lose_bet = self.get_arb_betting_amounts(200)
             output += "\n ARBITRAGE BET\n"
-            output += "\n" + self.p1 + " to win:£" + str(win_bet) + " at " + self.events[self.win_bookmaker].bookmaker
+            output += "\n" + self.p1 + " to win:£" + str(win_bet) + " at " + self.events[
+                self.win_bookmaker].bookmaker
             output += "\n" + "Draw" + ":£" + str(draw_bet) + " at " + self.events[self.draw_bookmaker].bookmaker
-            output += "\n" + self.p2 + " to win:£" + str(lose_bet) + " at " + self.events[self.lose_bookmaker].bookmaker
+            output += "\n" + self.p2 + " to win:£" + str(lose_bet) + " at " + self.events[
+                self.lose_bookmaker].bookmaker
 
         return output
 
@@ -208,6 +255,124 @@ class ArbitrageEvent:
             # Pick the best return
             t = max(approx_betting, key=lambda x: x[0])
             return t[1]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# class ArbitrageEvent:
+#     """
+#     Takes a list of BettingEvents for an event and returns the best arb
+#     """
+#     def __init__(self, event_list):
+#         self.events = copy.deepcopy(event_list)
+#         self.p1 = event_list[0].p1
+#         self.p2 = event_list[0].p2
+#         self.p1_ind = event_list[0].p1_ind
+#         self.p2_ind = event_list[0].p2_ind
+#
+#         # Handle case when only one BettingEvent is passed in
+#         if len(event_list) > 1:
+#             # Determine if pairs are ordered
+#             for event in event_list[1:]:
+#                 if not (event.p1_ind == self.p1_ind and event.p2_ind == self.p2_ind):
+#                     # Events are not ordered
+#                     # First check they just need to be switches
+#                     if event.p1_ind == self.p2_ind and event.p2_ind == self.p1_ind:
+#                         # We need to switch the odds and participants
+#                         temp = dict()
+#                         temp['p1'] = event.p1
+#                         temp['p1_ind'] = event.p1_ind
+#                         temp['win_odds'] = event.win_odds
+#                         temp['lose_odds'] = event.lose_odds
+#
+#                         event.p1 = event.p2
+#                         event.p1_ind = event.p2_ind
+#                         event.p2 = temp['p1']
+#                         event.p2_ind = temp['p1_ind']
+#                         event.win_odds = temp['lose_odds']
+#                         event.lose_odds = temp['win_odds']
+#                     else:
+#                         # These pairs are just totally wrong
+#                         raise ValueError("Events have different participants")
+#                 else:
+#                     pass
+#
+#         # Find the best odds
+#         temp = [event.win_odds for event in self.events]
+#         self.win_odds = max(temp)
+#         self.win_bookmaker = [i for i, j in enumerate(temp) if j == self.win_odds][0]
+#
+#         temp = [event.lose_odds for event in self.events]
+#         self.lose_odds = max(temp)
+#         self.lose_bookmaker = [i for i, j in enumerate(temp) if j == self.lose_odds][0]
+#
+#         temp = [event.draw_odds for event in self.events]
+#         self.draw_odds = max(temp)
+#         self.draw_bookmaker = [i for i, j in enumerate(temp) if j == self.draw_odds][0]
+#
+#         # Calculate Arb percentage
+#         self.win_odds_arb = round(1/self.win_odds, 5)
+#         self.lose_odds_arb = round(1/self.lose_odds, 5)
+#         self.draw_odds_arb = round(1/self.draw_odds, 5)
+#         self.arb_perc = round(self.win_odds_arb + self.draw_odds_arb + self.lose_odds_arb, 5)
+#         self.arb_perc_profit = round((1-self.arb_perc)/self.arb_perc, 5)
+#
+#         if self.arb_perc < 1:
+#             self.arb_present = True
+#         else:
+#             self.arb_present = False
+#
+#     def __str__(self):
+#         """
+#         Man United win 3.1 (WilliamHill): 0.55
+#         Draw 2.2 (888): 0.22
+#         Everton win 1.1 (PaddyPower): 0.22
+#         :return:
+#         """
+#         output = self.p1 + " win " + str(self.win_odds) + " (" + self.events[self.win_bookmaker].bookmaker + "): " + \
+#                  str(self.win_odds_arb) + "\n"
+#         output += "Draw " + str(self.draw_odds) + " (" + self.events[self.draw_bookmaker].bookmaker + "): " + \
+#                  str(self.draw_odds_arb) + "\n"
+#         output += self.p2 + " win " + str(self.lose_odds) + " (" + self.events[self.lose_bookmaker].bookmaker + "): " + \
+#                  str(self.lose_odds_arb)+ "\n"
+#         output += str(self.arb_perc)
+#
+#         if self.arb_present:
+#             win_bet, draw_bet, lose_bet = self.get_arb_betting_amounts(200)
+#             output += "\n ARBITRAGE BET\n"
+#             output += "\n" + self.p1 + " to win:£" + str(win_bet) + " at " + self.events[self.win_bookmaker].bookmaker
+#             output += "\n" + "Draw" + ":£" + str(draw_bet) + " at " + self.events[self.draw_bookmaker].bookmaker
+#             output += "\n" + self.p2 + " to win:£" + str(lose_bet) + " at " + self.events[self.lose_bookmaker].bookmaker
+#
+#         return output
+#
+#     def get_arb_betting_amounts(self, total_investment, integer_round=True):
+#         """
+#         Calculate required betting amounts for arb
+#         :param total_investment:
+#         :return:
+#         """
+#         win_bet = self.win_odds_arb * total_investment / self.arb_perc
+#         draw_bet = self.draw_odds_arb * total_investment / self.arb_perc
+#         lose_bet = self.lose_odds_arb * total_investment / self.arb_perc
+#
+#         if not integer_round:
+#             return round(win_bet, 2), round(draw_bet, 2), round(lose_bet, 2)
+#         else:
+#             approx_betting = []
+#             # Test each possible bet and pick the one with the best rate of return
+#             for win_approx in (math.floor(win_bet), math.ceil(win_bet)):
+#                 for draw_approx in (math.floor(draw_bet), math.ceil(draw_bet)):
+#                     for lose_approx in (math.floor(lose_bet), math.ceil(lose_bet)):
+#                         bets = (win_approx, draw_approx, lose_approx)
+#                         bet_return = min(win_approx * self.win_odds,
+#                                          draw_approx * self.draw_odds,
+#                                          lose_approx * self.lose_odds)
+#                         bet_return -= win_approx + draw_approx + lose_approx
+#                         bet_return /= (win_approx + draw_approx + lose_approx)
+#                         approx_betting.append([bet_return, bets])
+#             # Pick the best return
+#             t = max(approx_betting, key=lambda x: x[0])
+#             return t[1]
 
 
 class Market:
