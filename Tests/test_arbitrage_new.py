@@ -7,6 +7,105 @@ from config import *
 
 
 # ------------------------
+# Odds class tests
+# ------------------------
+class OddsFractionalOddsTestCase(unittest.TestCase):
+    """Tests for Odds class in arbitrage.py."""
+
+    def test_fractional_odds_no_space(self):
+        """Are fractional odds translated correctly when no spacces?"""
+        self.assertEqual(self.odds_one.odds, 3.5)
+
+    def test_fractional_odds_with_space(self):
+        """Are fractional odds translated correctly with spacces?"""
+        self.assertEqual(self.odds_two.odds, 3.5)
+
+    def test_fractional_odds_with_tabs(self):
+        """Are fractional odds translated correctly with tabs and spacces?"""
+        self.assertEqual(self.odds_three.odds, 3.5)
+
+    def setUp(self):
+        one = "5/2"
+        two = "5 / 2"
+        three = "5  \t / \t   2"
+        self.odds_one = arbitrage.Odds(one)
+        self.odds_two = arbitrage.Odds(two)
+        self.odds_three = arbitrage.Odds(three)
+
+
+class OddsDecimalOddsTestCase(unittest.TestCase):
+    """Tests for Odds class in arbitrage.py."""
+
+    def test_decimal_odds_long_decimal(self):
+        """Are decimal odds with long decimals handled?"""
+        self.assertEqual(self.odds_one.odds, 2.55515)
+
+    def test_decimal_odds_integer(self):
+        """Are integer odds handled?"""
+        self.assertEqual(self.odds_two.odds, 1)
+
+    def test_decimal_sub_one(self):
+        """Are decimal odds below 1 handled?"""
+        self.assertEqual(self.odds_three.odds, 0.15667)
+
+    def setUp(self):
+        one = 2.55515151
+        two = 1
+        three = "0.156666"
+        self.odds_one = arbitrage.Odds(one)
+        self.odds_two = arbitrage.Odds(two)
+        self.odds_three = arbitrage.Odds(three)
+
+
+class OddsEvensTestCase(unittest.TestCase):
+    """Tests for Odds class in arbitrage.py."""
+
+    def test_evens_odds(self):
+        """Are "evens" odds handled?"""
+        self.assertEqual(self.odds_one.odds, 1)
+
+    def test_EVENS_odds(self):
+        """Are "EVENS" odds handled?"""
+        self.assertEqual(self.odds_two.odds, 1)
+
+    def setUp(self):
+        one = "evens"
+        two = "EVENS"
+        self.odds_one = arbitrage.Odds(one)
+        self.odds_two = arbitrage.Odds(two)
+
+
+# ------------------------
+# Participant class tests
+# ------------------------
+class ParticipantTestCase(unittest.TestCase):
+    """Tests for Participant class in arbitrage.py."""
+
+    def test_category_present(self):
+        """Are categories found correctly?"""
+        self.assertEqual(self.part_pres.cat_id, 1)
+
+    def test_participant_present(self):
+        """Are participants found correctly?"""
+        self.assertEqual(self.part_pres.participant_id, 1)
+
+    def test_category_not_present(self):
+        """Are categories not found handled correctly"""
+        self.assertRaises(KeyError, lambda: arbitrage.Participant("Rug", "Tib"))
+
+    def test_participant_not_present(self):
+        """Are participants not found handled correctly"""
+        self.assertRaises(KeyError, lambda: arbitrage.Participant("Football", "Tib"))
+
+    def setUp(self):
+        cat_present = "Football"
+        participant_present = "Arsenal"
+
+        self.part_pres = arbitrage.Participant(cat_present, participant_present)
+
+
+# TODO: Start here
+# ------------------------
 # Event class tests
 # ------------------------
 class EventTestCase(unittest.TestCase):
@@ -39,70 +138,6 @@ class EventTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
-
-
-# ------------------------
-# Odds class tests
-# ------------------------
-class OddsFractionalOddsTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
-
-    def test_fractional_odds_no_space(self):
-        """Are fractional odds translated correctly when no spacces?"""
-        self.assertEqual(self.odds.true, 3.5)
-
-    def test_fractional_odds_with_space(self):
-        """Are fractional odds translated correctly with spacces?"""
-        self.assertEqual(self.odds.false, 3.5)
-
-    def test_fractional_odds_with_tabs(self):
-        """Are fractional odds translated correctly with tabs and spacces?"""
-        self.assertEqual(self.odds.null, 3.5)
-
-    def setUp(self):
-        true = "5/2"
-        false = "5 / 2"
-        null = "5  \t / \t   2"
-        self.odds = arbitrage.Odds(true, false, null)
-
-
-class OddsDecimalOddsTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
-
-    def test_decimal_odds_long_decimal(self):
-        """Are decimal odds with long decimals handled?"""
-        self.assertEqual(self.odds.true, 2.55515)
-
-    def test_decimal_odds_integer(self):
-        """Are integer odds handled?"""
-        self.assertEqual(self.odds.false, 1)
-
-    def test_decimal_sub_one(self):
-        """Are decimal odds below 1 handled?"""
-        self.assertEqual(self.odds.null, 0.15667)
-
-    def setUp(self):
-        true = 2.55515151
-        false = 1
-        null = "0.156666"
-        self.odds = arbitrage.Odds(true, false, null)
-
-
-class OddsEvensTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
-
-    def test_evens_odds(self):
-        """Are "evens" odds handled?"""
-        self.assertEqual(self.odds.true, 1)
-
-    def test_EVENS_odds(self):
-        """Are "EVENS" odds handled?"""
-        self.assertEqual(self.odds.false, 1)
-
-    def setUp(self):
-        true = "evens"
-        false = "EVENS"
-        self.odds = arbitrage.Odds(true, false)
 
 
 # --------------------------

@@ -3,14 +3,7 @@ import warnings
 import copy
 import math
 import mwutils as mu
-
-CATEGORY_DICT = {"FOOTBALL": 1}
-
-PARTICIPANT_DICT = dict()
-PARTICIPANT_DICT["FOOTBALL"] = {"ARSENAL": 1}
-
-SUBCATEGORY_DICT = dict()
-SUBCATEGORY_DICT["FOOTBALL"] = {"PREMIER LEAGUE": 1}
+from config import *
 
 
 class Odds:
@@ -53,16 +46,16 @@ class Participant:
     """
     Owner of the outcome
     """
-    def __init__(self, name, category):
-        self.category = category
+    def __init__(self, category, name):
+        self.category = category.upper()
         try:
-            self.cat_id = CATEGORY_DICT[category.upper]
+            self.cat_id = CATEGORY_DICT[self.category]
         except KeyError:
             raise KeyError("Category " + category + " not in CATEGORY_DICT")
 
-        self.participant = name
+        self.participant = name.upper()
         try:
-            self.participant_id = PARTICIPANT_DICT[category][name]
+            self.participant_id = PARTICIPANT_DICT[self.category][self.participant]
         except KeyError:
             raise KeyError("Participant " + name + " not in PARTICIPANT_DICT for category " + category)
 
