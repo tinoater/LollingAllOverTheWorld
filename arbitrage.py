@@ -19,6 +19,41 @@ class Odds:
 
         return output
 
+    def __lt__(self, other):
+        if isinstance(other, self.__class__):
+            if self.odds < other.odds:
+                return True
+
+        return False
+
+    def __le__(self, other):
+        if isinstance(other, self.__class__):
+            if self.odds <= other.odds:
+                return True
+
+        return False
+
+    def __gt__(self, other):
+        if isinstance(other, self.__class__):
+            if self.odds > other.odds:
+                return True
+
+        return False
+
+    def __ge__(self, other):
+        if isinstance(other, self.__class__):
+            if self.odds >= other.odds:
+                return True
+
+        return False
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.odds == other.odds:
+                return True
+
+        return False
+
     def fractional_to_decimal_odds(self, odds):
         """
         Convert odds from fractional to decimal
@@ -61,6 +96,14 @@ class Participant:
 
     def __str__(self):
         return self.participant + "(" + str(self.participant_id)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.cat_id == other.cat_id:
+                if self.participant_id == other.participant_id:
+                    return True
+
+        return False
 
 
 class Event:
@@ -119,6 +162,52 @@ class BettableOutcome:
         outcome = self.bookmaker + "-" + self.participant.name + "-" + self.outcome_type + ":" + self.odds
 
         return outcome
+
+    def __lt__(self, other):
+        if isinstance(other, self.__class__):
+            if self.participant == other.participant and self.event == other.event and \
+               self.outcome_type == other.outcome_type:
+                if self.odds.odds < other.odds.odds:
+                    return True
+
+        return False
+
+    def __le__(self, other):
+        if isinstance(other, self.__class__):
+            if self.participant == other.participant and self.event == other.event and \
+               self.outcome_type == other.outcome_type:
+                if self.odds.odds <= other.odds.odds:
+                    return True
+
+        return False
+
+    def __gt__(self, other):
+        if isinstance(other, self.__class__):
+            if self.participant == other.participant and self.event == other.event and \
+               self.outcome_type == other.outcome_type:
+                if self.odds.odds > other.odds.odds:
+                    return True
+
+        return False
+
+    def __ge__(self, other):
+        if isinstance(other, self.__class__):
+            if self.participant == other.participant and self.event == other.event and \
+               self.outcome_type == other.outcome_type:
+                if self.odds.odds >= other.odds.odds:
+                    return True
+
+        return False
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.participant == other.participant and self.event == other.event and \
+               self.outcome_type == other.outcome_type:
+                if self.odds.odds == other.odds.odds:
+                    return True
+
+        return False
+
 
 
 class Bet:

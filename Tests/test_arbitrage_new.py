@@ -75,6 +75,37 @@ class OddsEvensTestCase(unittest.TestCase):
         self.odds_two = arbitrage.Odds(two)
 
 
+class OddsComparisonTestCase(unittest.TestCase):
+    def setUp(self):
+        self.small = arbitrage.Odds(0.6)
+        self.medium = arbitrage.Odds(0.65)
+        self.large = arbitrage.Odds(2)
+        self.v_large = arbitrage.Odds(2.3)
+
+        self.v_large2 = arbitrage.Odds("13/10")
+
+    def test_odds_less_than(self):
+        self.assertLess(self.small, self.medium)
+        self.assertLess(self.small, self.large)
+        self.assertLess(self.medium, self.v_large)
+        self.assertLess(self.large, self.v_large)
+
+    def test_odds_greater_than(self):
+        self.assertGreater(self.medium, self.small)
+        self.assertGreater(self.large, self.small)
+        self.assertGreater(self.v_large, self.medium)
+        self.assertGreater(self.v_large, self.large)
+
+    def test_odds_equal(self):
+        self.assertEqual(self.v_large, self.v_large2)
+
+    def test_less_equal_to(self):
+        self.assertLessEqual(self.v_large, self.v_large2)
+
+    def test_greater_equal_to(self):
+        self.assertGreaterEqual(self.v_large, self.v_large2)
+
+
 # ------------------------
 # Participant class tests
 # ------------------------
@@ -104,7 +135,19 @@ class ParticipantTestCase(unittest.TestCase):
         self.part_pres = arbitrage.Participant(cat_present, participant_present)
 
 
-# TODO: Start here
+class ParticipantEqualityTestCase(unittest.TestCase):
+    def setUp(self):
+        self.bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.bourn2 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH AFC")
+        self.arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
+
+    def test_participant_equal(self):
+        self.assertEqual(self.bourn1, self.bourn2)
+
+    def test_participant_not_equal(self):
+        self.assertNotEqual(self.bourn2, self.arsenal)
+
+
 # ------------------------
 # Event class tests
 # ------------------------
@@ -137,6 +180,63 @@ class EventTestCase(unittest.TestCase):
         self.event = None
 
     def setUp(self):
+        pass
+
+
+class EventEqualityTestCase(unittest.TestCase):
+    def setUp(self):
+        self.bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.bourn2 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH AFC")
+        self.arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
+        self.burn = arbitrage.Participant("FOOTBALL", "BURNLEY")
+
+        self.event_one = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.bourn1, self.arsenal])
+        self.event_one_dup = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.arsenal, self.bourn1])
+        self.event_one_dup2 = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.arsenal, self.bourn2])
+
+        self.event_two = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.burn, self.bourn1])
+
+    def test_events_are_equal(self):
+        self.assertEqual(self.event_one, self.event_one_dup)
+        self.assertEqual(self.event_one, self.event_one_dup2)
+
+    def test_events_are_not_equal(self):
+        self.assertNotEqual(self.event_one, self.event_two)
+
+
+# TODO: Start here
+# --------------------------
+# BettableOutcome class tests
+# --------------------------
+class BettableOutcomeTestCase(unittest.TestCase):
+    def setUp(self):
+        self.part_bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.part_arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
+        self.part_burn = arbitrage.Participant("FOOTBALL", "BURNLEY")
+
+        self.event_one = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_arsenal])
+        self.event_one_dupe = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_burn, self.part_bourn1])
+        self.event_two = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_burn])
+
+        self.odds_good = arbitrage.Odds("10/1")
+        self.odds_bad = arbitrage.Odds("2/1")
+
+        self.bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
+        self.bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
+
+    def test_bettableoutcome_equality(self):
+        pass
+
+    def test_bettableoutcome_less_than(self):
+        pass
+
+    def test_bettableoutcome_greater_than(self):
+        pass
+
+    def test_bettableoutcome_greater_equal(self):
+        pass
+
+    def test_bettableoutcome_less_equal(self):
         pass
 
 
