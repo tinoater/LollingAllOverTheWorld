@@ -211,6 +211,7 @@ class EventEqualityTestCase(unittest.TestCase):
 class BettableOutcomeTestCase(unittest.TestCase):
     def setUp(self):
         self.part_bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.part_bourn2 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH AFC")
         self.part_arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
         self.part_burn = arbitrage.Participant("FOOTBALL", "BURNLEY")
 
@@ -220,24 +221,42 @@ class BettableOutcomeTestCase(unittest.TestCase):
 
         self.odds_good = arbitrage.Odds("10/1")
         self.odds_bad = arbitrage.Odds("2/1")
+        self.odds_bad_dec = arbitrage.Odds(3)
+        self.odds_good_dec = arbitrage.Odds(11)
+
+        self.bo_e1_p1_o1_good_other_odds = arbitrage.BettableOutcome(self.event_one,
+                                                                     self.part_bourn1,
+                                                                     "WIN",
+                                                                     self.odds_good_dec,
+                                                                     "B1")
+
+        self.bo_e1_p1_o1_bad_other_odds = arbitrage.BettableOutcome(self.event_one,
+                                                                    self.part_bourn1,
+                                                                    "WIN",
+                                                                    self.odds_bad_dec,
+                                                                    "B1")
 
         self.bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
-        self.bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
+        self.bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_bad, "B1")
+        self.bo_e1_p1_o1_good_dupe = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
 
     def test_bettableoutcome_equality(self):
-        pass
+        self.assertEqual(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_good_dupe)
 
     def test_bettableoutcome_less_than(self):
-        pass
+        self.assertLess(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_good)
 
     def test_bettableoutcome_greater_than(self):
-        pass
+        self.assertGreater(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_bad)
 
     def test_bettableoutcome_greater_equal(self):
-        pass
+        self.assertGreaterEqual(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_bad_other_odds)
+        self.assertGreater(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_bad)
 
     def test_bettableoutcome_less_equal(self):
-        pass
+        self.assertGreaterEqual(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_good_other_odds)
+        self.assertLess(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_good)
+
 
 
 # --------------------------
