@@ -50,7 +50,7 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
                 events.append(page.betting_events)
 
         # Create the market for these events
-        m = arbitrage.Market(events)
+        m = arbitrage.ArbitrageBetParser(events)
 
         # Update the summary information
         if len(m.arbitrage_events) > 0:

@@ -204,152 +204,307 @@ class EventEqualityTestCase(unittest.TestCase):
         self.assertNotEqual(self.event_one, self.event_two)
 
 
-# TODO: Start here
 # --------------------------
 # BettableOutcome class tests
 # --------------------------
 class BettableOutcomeTestCase(unittest.TestCase):
     def setUp(self):
         self.part_bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
-        self.part_bourn2 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH AFC")
+        self.part_bournafc = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH AFC")
         self.part_arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
         self.part_burn = arbitrage.Participant("FOOTBALL", "BURNLEY")
 
-        self.event_one = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_arsenal])
-        self.event_one_dupe = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_burn, self.part_bourn1])
-        self.event_two = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_burn])
+        self.event_bourn_arsenal = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_arsenal])
+        self.event_burn_bourn = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_burn, self.part_bourn1])
+        self.event_bourn_burn = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE", [self.part_bourn1, self.part_burn])
 
         self.odds_good = arbitrage.Odds("10/1")
         self.odds_bad = arbitrage.Odds("2/1")
         self.odds_bad_dec = arbitrage.Odds(3)
         self.odds_good_dec = arbitrage.Odds(11)
 
-        self.bo_e1_p1_o1_good_other_odds = arbitrage.BettableOutcome(self.event_one,
-                                                                     self.part_bourn1,
-                                                                     "WIN",
-                                                                     self.odds_good_dec,
-                                                                     "B1")
-
-        self.bo_e1_p1_o1_bad_other_odds = arbitrage.BettableOutcome(self.event_one,
+    def test_bettableoutcome_equality(self):
+        bo_bourn_arsenal_bourn_good = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                                self.part_bourn1,
+                                                                "WIN",
+                                                                "WIN",
+                                                                self.odds_good,
+                                                                "B")
+        bo_bourn_arsenal_bournafc_good = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                                   self.part_bournafc,
+                                                                   "WIN",
+                                                                   "WIN",
+                                                                   self.odds_good,
+                                                                   "B")
+        bo_bourn_arsenal_bourn_good_dec = arbitrage.BettableOutcome(self.event_bourn_arsenal,
                                                                     self.part_bourn1,
                                                                     "WIN",
-                                                                    self.odds_bad_dec,
-                                                                    "B1")
+                                                                    "WIN",
+                                                                    self.odds_good_dec,
+                                                                    "B")
+        bo_bourn_arsenal_bourn_good_dec_B2 = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                                    self.part_bourn1,
+                                                                    "WIN",
+                                                                    "WIN",
+                                                                    self.odds_good_dec,
+                                                                    "B2")
+        # Test decimal vs text odds
+        self.assertEqual(bo_bourn_arsenal_bourn_good_dec, bo_bourn_arsenal_bourn_good)
+        # Test different version of same participant
+        self.assertEqual(bo_bourn_arsenal_bourn_good, bo_bourn_arsenal_bournafc_good)
+        # Test diff bookies
+        self.assertEqual(bo_bourn_arsenal_bourn_good_dec, bo_bourn_arsenal_bourn_good_dec_B2)
 
-        self.bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
-        self.bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_bad, "B1")
-        self.bo_e1_p1_o1_good_dupe = arbitrage.BettableOutcome(self.event_one, self.part_bourn1, "WIN", self.odds_good, "B1")
+    def test_bettableoutcome_not_equality(self):
+        bo_bourn_arsenal_bourn_good = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                                self.part_bourn1,
+                                                                "WIN",
+                                                                "WIN",
+                                                                self.odds_good,
+                                                                "B")
+        bo_bourn_arsenal_bourn_bad = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                               self.part_bourn1,
+                                                               "WIN",
+                                                               "WIN",
+                                                               self.odds_bad,
+                                                               "B")
+        bo_bourn_burn_bourn_bad = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                            self.part_bourn1,
+                                                            "WIN",
+                                                            "WIN",
+                                                            self.odds_good,
+                                                            "B")
+        bo_bourn_burn_bourn_bad_lose = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                                 self.part_bourn1,
+                                                                 "LOSE",
+                                                                 "WIN",
+                                                                 self.odds_good,
+                                                                 "B")
+        bo_bourn_burn_burn_bad_lose = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                                 self.part_burn,
+                                                                 "LOSE",
+                                                                 "WIN",
+                                                                 self.odds_good,
+                                                                 "B")
 
-    def test_bettableoutcome_equality(self):
-        self.assertEqual(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_good_dupe)
+        # Test odds are different
+        self.assertNotEqual(bo_bourn_arsenal_bourn_good, bo_bourn_arsenal_bourn_bad)
+        # Test events are different
+        self.assertNotEqual(bo_bourn_arsenal_bourn_bad, bo_bourn_burn_bourn_bad)
+        # Test outcome type different
+        self.assertNotEqual(bo_bourn_burn_bourn_bad, bo_bourn_burn_bourn_bad_lose)
+        # Test outcome participant is different
+        self.assertNotEqual(bo_bourn_burn_bourn_bad_lose, bo_bourn_burn_burn_bad_lose)
 
     def test_bettableoutcome_less_than(self):
-        self.assertLess(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_good)
+        bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_bad,
+                                                    "B")
+        bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_good,
+                                                    "B")
+        self.assertLess(bo_e1_p1_o1_bad, bo_e1_p1_o1_good)
 
     def test_bettableoutcome_greater_than(self):
-        self.assertGreater(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_bad)
+        bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_bad,
+                                                    "B")
+        bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_good,
+                                                    "B")
+        self.assertGreater(bo_e1_p1_o1_good, bo_e1_p1_o1_bad)
 
     def test_bettableoutcome_greater_equal(self):
-        self.assertGreaterEqual(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_bad_other_odds)
-        self.assertGreater(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_bad)
+        bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_bad,
+                                                    "B")
+        bo_e1_p1_o1_bad_other_odds = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                               self.part_bourn1,
+                                                               "WIN",
+                                                               "WIN",
+                                                               self.odds_bad_dec,
+                                                               "B")
+        bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                     self.part_bourn1,
+                                                     "WIN",
+                                                     "WIN",
+                                                     self.odds_good,
+                                                     "B")
+        self.assertGreaterEqual(bo_e1_p1_o1_bad, bo_e1_p1_o1_bad_other_odds)
+        self.assertGreater(bo_e1_p1_o1_good, bo_e1_p1_o1_bad)
 
     def test_bettableoutcome_less_equal(self):
-        self.assertGreaterEqual(self.bo_e1_p1_o1_good, self.bo_e1_p1_o1_good_other_odds)
-        self.assertLess(self.bo_e1_p1_o1_bad, self.bo_e1_p1_o1_good)
+        bo_e1_p1_o1_bad = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_bad,
+                                                    "B")
+        bo_e1_p1_o1_good_other_odds = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                                self.part_bourn1,
+                                                                "WIN",
+                                                                "WIN",
+                                                                self.odds_good_dec,
+                                                                "B")
+        bo_e1_p1_o1_good = arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                    self.part_bourn1,
+                                                    "WIN",
+                                                    "WIN",
+                                                    self.odds_good,
+                                                    "B")
+        self.assertGreaterEqual(bo_e1_p1_o1_good, bo_e1_p1_o1_good_other_odds)
+        self.assertLess(bo_e1_p1_o1_bad, bo_e1_p1_o1_good)
 
+    def test_bettableoutcome_participant_validation(self):
+        self.assertRaises(ValueError, lambda :arbitrage.BettableOutcome(self.event_bourn_burn,
+                                                                        self.part_arsenal,
+                                                                        "WIN",
+                                                                        "WIN",
+                                                                        self.odds_good,
+                                                                        "B"))
 
 
 # --------------------------
-# ArbitrageEvent class tests
+# Bet class tests
 # --------------------------
-class ArbitrageEventNonOrderedPlayersTestCase(unittest.TestCase):
-    """Tests for ArbitrageEvent class in arbitrage.py."""
+class BetTestCase(unittest.TestCase):
+    def setUp(self):
+        self.part_bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.part_arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
+        self.event_bourn_arsenal = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE",
+                                                   [self.part_bourn1, self.part_arsenal])
+        self.odds_good = arbitrage.Odds("10/1")
+        self.odds_good_two = arbitrage.Odds("10/3")
 
-    def test_non_ordered_exception(self):
-        """Does the arb fail when players are not ordered?"""
-        arb = arbitrage.ArbitrageEvent([self.one, self.two])
+        self.bettable_outcome = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                          self.part_bourn1,
+                                                          "WIN",
+                                                          "WIN",
+                                                          self.odds_good,
+                                                          "B")
+        self.bettable_outcome_two = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                              self.part_bourn1,
+                                                              "WIN",
+                                                              "WIN",
+                                                              self.odds_good_two,
+                                                              "B")
 
-    def test_non_ordered(self):
-        """Does the arb work when players are not ordered?"""
-        t = arbitrage.ArbitrageEvent([self.one, self.two])
+    def test_bet_amounts(self):
+        bet = arbitrage.Bet(self.bettable_outcome, 100)
 
-        self.assertEqual(t.events[1].p1, "Blackpool")
-        self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[1].p2_ind, FOOTBALL_DICT['Doncaster'])
-        self.assertEqual(t.events[1].win_odds, 5.82)
-        self.assertEqual(t.events[1].lose_odds, 1.625)
+        self.assertEqual(bet.bet_amount, 100)
+        self.assertEqual(bet.return_amount, 1100)
+        self.assertEqual(bet.profit_amount, 1000)
 
-        # Just to make sure
-        self.assertEqual(t.events[0].p1, "Blackpool")
-        self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[0].p2_ind, FOOTBALL_DICT['Doncaster'])
-        self.assertEqual(t.events[0].win_odds, 2.1)
-        self.assertEqual(t.events[0].lose_odds, 2.5)
+    def test_bet_amounts_complicated(self):
+        bet = arbitrage.Bet(self.bettable_outcome_two, 52)
 
-    def test_non_ordered_third_exception(self):
-        """Does the arb work when third event is not ordered?"""
-        t = arbitrage.ArbitrageEvent([self.one, self.three, self.two])
+        self.assertEqual(bet.bet_amount, 52)
+        self.assertEqual(bet.return_amount, 225.33)
+        self.assertEqual(bet.profit_amount, 173.33)
 
-        self.assertEqual(t.events[2].p1, "Blackpool")
-        self.assertEqual(t.events[2].p2, "Doncaster")
-        self.assertEqual(t.events[2].p1_ind, FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[2].p2_ind, FOOTBALL_DICT['Doncaster'])
-        self.assertEqual(t.events[2].win_odds, 5.82)
-        self.assertEqual(t.events[2].lose_odds, 1.625)
 
-        # Confirm first two have not been reordered too
-        self.assertEqual(t.events[0].p1, "Blackpool")
-        self.assertEqual(t.events[0].p2, "Doncaster")
-        self.assertEqual(t.events[0].p1_ind, FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[0].p2_ind, FOOTBALL_DICT['Doncaster'])
-        self.assertEqual(t.events[0].win_odds, 2.1)
-        self.assertEqual(t.events[0].lose_odds, 2.5)
+# --------------------------
+# ArbitrageBet class tests
+# --------------------------
+class ArbitrageBetTestCase(unittest.TestCase):
+    """Tests for ArbitrageBet class in arbitrage.py."""
 
-        self.assertEqual(t.events[1].p1, "Blackpool")
-        self.assertEqual(t.events[1].p2, "Doncaster")
-        self.assertEqual(t.events[1].p1_ind, FOOTBALL_DICT['Blackpool'])
-        self.assertEqual(t.events[1].p2_ind, FOOTBALL_DICT['Doncaster'])
-        self.assertEqual(t.events[1].win_odds, 2.9)
-        self.assertEqual(t.events[1].lose_odds, 2.5)
+    def test_validations_same_event(self):
+        """Does the arb bet fail when events are different?"""
+        event2 = arbitrage.Event("FOOTBALL", "FA CUP", [self.part_bourn1, self.part_arsenal])
+        bet_draw = arbitrage.Bet(arbitrage.BettableOutcome(event2, self.part_arsenal, "LOSE", "LOSE",
+                                                           arbitrage.Odds(5.1), "B2"), 100)
+
+        self.assertRaises(ValueError, lambda : arbitrage.ArbitrageBet([bet_draw, self.bet_arse]))
+
+    def test_validations_same_outcometype(self):
+        """Does the arb bet fail when outcome type is different?"""
+        bo_goals = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                             self.part_bourn1,
+                                             "GOALS",
+                                             "More than 1",
+                                             arbitrage.Odds(1),
+                                             "B2")
+        bet_goals = arbitrage.Bet(bo_goals, 100)
+
+        self.assertRaises(ValueError, lambda : arbitrage.ArbitrageBet([self.bet_arse, bet_goals]))
+
+    def test_validations_incomplete_outcome_type(self):
+        """Does the arb bet fail when outcome type is incomplete?"""
+        self.assertRaises(ValueError, lambda : arbitrage.ArbitrageBet([self.bet_bourn, self.bet_arse]))
+
+    def test_no_total_investment_change(self):
+        """Is profit calculated correctly when total_investment is not changed?"""
+        arb_bet = arbitrage.ArbitrageBet([self.bet_bourn, self.bet_arse, self.bet_draw])
+
+        self.assertEqual(arb_bet.arb_perc, 96.59)
+        self.assertEqual(arb_bet.profit, 6)
+        self.assertEqual(arb_bet.return_perc, 3.02)
+        self.assertEqual(arb_bet.total_investment, 199)
+
+    def test_total_investment_change(self):
+        """Is profit calculated correctly when total_investment is changed?"""
+        arb_bet = arbitrage.ArbitrageBet([self.bet_bourn, self.bet_arse, self.bet_draw], total_investment=1990)
+
+        self.assertEqual(arb_bet.arb_perc, 96.59)
+        self.assertEqual(arb_bet.profit, 70.25)
+        self.assertEqual(arb_bet.return_perc, 3.53)
+        self.assertEqual(arb_bet.total_investment, 1990)
+
+    def test_set_betting_amounts_integer_round(self):
+        # TODO: Betting amount integer rounding test
+        pass
 
     def setUp(self):
-        event1 = arbitrage.Event("FOOTBALL", "L2", "Blackpool v Doncaster", "win",
-                                ["Blackpool", "Doncaster Rovers"], identity_dict=FOOTBALL_DICT)
-        event2 = arbitrage.Event("FOOTBALL", "L2", "Blackpool v Doncaster", "win",
-                                ["Doncaster", "Blackpool"], identity_dict=FOOTBALL_DICT)
+        self.part_bourn1 = arbitrage.Participant("FOOTBALL", "BOURNEMOUTH")
+        self.part_arsenal = arbitrage.Participant("FOOTBALL", "ARSENAL")
+        self.event_bourn_arsenal = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE",
+                                                   [self.part_bourn1, self.part_arsenal])
+        self.odds_bourn = arbitrage.Odds(4.3)
+        self.odds_arsenal = arbitrage.Odds(3)
+        self.odds_draw = arbitrage.Odds(2.5)
 
-        odds1 = arbitrage.Odds(true=2.1, false=2.5, null=1.65)
-        odds2 = arbitrage.Odds(true=1.625, false=5.82, null=1.5)
-        odds3 = arbitrage.Odds(true=2.9, false=2.5, null=1.25)
+        self.bo_bourn = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                  self.part_bourn1,
+                                                  "FULLTIME_RESULT",
+                                                  "WIN",
+                                                  self.odds_bourn,
+                                                  "B")
+        self.bo_arsenal = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                    self.part_arsenal,
+                                                    "FULLTIME_RESULT",
+                                                    "WIN",
+                                                    self.odds_arsenal,
+                                                    "B")
+        self.bo_draw = arbitrage.BettableOutcome(self.event_bourn_arsenal,
+                                                 self.part_bourn1,
+                                                 "FULLTIME_RESULT",
+                                                 "DRAW",
+                                                 self.odds_draw,
+                                                 "B")
 
-        self.one = arbitrage.BettingEvent(event1, odds1, "888")
-        self.two = arbitrage.BettingEvent(event2, odds2, "PaddyPower")
-        self.three = arbitrage.BettingEvent(event1, odds3, "AnotherOne")
-
-
-class ArbitrageEventBestOddsTestCase(unittest.TestCase):
-    """Tests for ArbitrageEvent class in arbitrage.py."""
-
-    def test_best_odds(self):
-        """Does the arb select the best odds?"""
-        self.assertEqual(self.arb.win_odds, 2.9)
-
-    def test_best_odds_bookmaker(self):
-        """Does the arb select the best bookmaker?"""
-        self.assertEqual(self.arb.win_bookmaker, 2)
-
-    def setUp(self):
-        self.one = arbitrage.BettingEvent("888", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.1, 2.5, 1.65, IDENTITY_DICT=FOOTBALL_DICT)
-        self.two = arbitrage.BettingEvent("PaddyPower", "FOOTBALL", "L2", "Blackpool v Doncaster", "Blackpool", "Doncaster",
-                           1.625, 5.82, 1.5, IDENTITY_DICT=FOOTBALL_DICT)
-        self.three = arbitrage.BettingEvent("AnotherOne", "FOOTBALL", "L2", "Blackpool v Doncaster Rovers", "Blackpool", "Doncaster",
-                           2.9, 2.5, 1.25, IDENTITY_DICT=FOOTBALL_DICT)
-        self.arb = arbitrage.ArbitrageEvent([self.one, self.two, self.three])
+        self.bet_bourn = arbitrage.Bet(self.bo_bourn, 48)
+        self.bet_arse = arbitrage.Bet(self.bo_arsenal, 69)
+        self.bet_draw = arbitrage.Bet(self.bo_draw, 82)
 
 
+# -----------------------------
 class ArbitrageEventArbPercentageNoArbTestCase(unittest.TestCase):
     """Tests for ArbitrageEvent class in arbitrage.py."""
 
@@ -449,14 +604,14 @@ class MarketTestCase(unittest.TestCase):
 
     def test_correct_number_of_arbs_full_pairing(self):
         """Are all pairs of arbs created when full pairings are present?"""
-        market = arbitrage.Market(self.event_list)
+        market = arbitrage.ArbitrageBetParser(self.event_list)
         self.assertEqual(len(market.arbitrage_events), 12)
         self.assertEqual(len(market.orphan_events), 0)
 
     def test_correct_number_of_arbs_partial_pairing_1(self):
         """Are all pairs of arbs created when there are partial pairings present?"""
         del self.event_list[0][5]
-        market = arbitrage.Market(self.event_list)
+        market = arbitrage.ArbitrageBetParser(self.event_list)
         self.assertEqual(len(market.arbitrage_events), 11)
         self.assertEqual(len(market.orphan_events), 1)
 
@@ -464,18 +619,18 @@ class MarketTestCase(unittest.TestCase):
         """Are all pairs of arbs created when there are partial pairings present?"""
         del self.event_list[0][5]
         del self.event_list[1][6]
-        market = arbitrage.Market(self.event_list)
+        market = arbitrage.ArbitrageBetParser(self.event_list)
         self.assertEqual(len(market.arbitrage_events), 10)
         self.assertEqual(len(market.orphan_events), 2)
 
     def test_correct_number_of_possible_arbs_full_pairing(self):
         """Are arbs correctly identified?"""
-        market = arbitrage.Market(self.event_list)
+        market = arbitrage.ArbitrageBetParser(self.event_list)
         self.assertEqual(len(market.possible_arb_list), 0)
 
         self.event_list[0][2].win_odds = 20
         self.event_list[1][2].lose_odds = 20
-        market2 = arbitrage.Market(self.event_list)
+        market2 = arbitrage.ArbitrageBetParser(self.event_list)
         self.assertEqual(len(market2.possible_arb_list), 1)
 
 

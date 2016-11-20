@@ -1,7 +1,5 @@
-import os
 import warnings
 import copy
-import math
 import mwutils as mu
 from config import *
 
@@ -12,7 +10,7 @@ class Odds:
     """
     def __init__(self, odds):
         self.odds = self.fractional_to_decimal_odds(odds)
-        self.odds_arb = round(1/self.odds, 2)
+        self.odds_arb = 1/self.odds
 
     def __str__(self):
         output = str(self.odds) + " (" + str(self.odds_arb)
@@ -146,17 +144,28 @@ class Event:
 
         return False
 
+    def __hash__(self):
+        participants_tup = tuple(self.participant_ids)
+        properties_tup = (self.category, self.sub_category, participants_tup)
+
+        return hash(properties_tup)
+
 
 class BettableOutcome:
     """
     Bookmaker, event, participant, type of outcome and odds
     """
-    def __init__(self, event, participant, outcome_type, odds, bookmaker):
+    def __init__(self, event, participant, outcome_type, outcome, odds, bookmaker):
         self.participant = participant
         self.outcome_type = outcome_type
+        self.outcome = outcome
         self.odds = odds
         self.bookmaker = bookmaker
         self.event = event
+
+        # Validations
+        if self.participant not in self.event.participants:
+            raise ValueError("Participant not in the Event")
 
     def __str__(self):
         outcome = self.bookmaker + "-" + self.participant.name + "-" + self.outcome_type + ":" + self.odds
@@ -209,12 +218,15 @@ class BettableOutcome:
         return False
 
 
-
 class Bet:
     def __init__(self, BettableOutcome, bet_amount):
         self.bettable_outcome = BettableOutcome
         self.event = self.bettable_outcome.event
         self.odds = self.bettable_outcome.odds
+
+        self.bet_amount = 0
+        self.return_amount = 0
+        self.profit_amount = 0
 
         self.set_bet_amount(bet_amount)
 
@@ -231,21 +243,51 @@ class Bet:
         self.profit_amount = self.return_amount - self.bet_amount
 
 
-class ArbitrageBettableOutcome:
+class ArbitrageBet:
     """
-    Combination of BettableOutcome allowing arbitrage
+    Combination of Bets allowing arbitrage
     """
-    def __init__(self, bet_list, total_investment):
+    def __init__(self, bet_list, total_investment=None):
         self.bets = copy.deepcopy(bet_list)
-        self.arb_perc = min([x.bettable_outcome.odds.odds_arb for x in self.bets])
-        self.arb_perc_profit = round((1 - self.arb_perc) / self.arb_perc, 5)
+
+        # First check that all bets are for the same event
+        if len(set([x.event for x in self.bets])) != 1:
+            raise ValueError("Multiple events in ArbitrageBettableOutomce")
+        # Check that all bets are for the same outcome type
+        if len(set([x.bettable_outcome.outcome_type for x in self.bets])) != 1:
+            raise ValueError("Multiple outcome_types in ArbitrageBettableOutomce")
+        else:
+            self.outcome_type = self.bets[0].bettable_outcome.outcome_type
+        # Check that we have the full set of outcomes for this outcome_type
+        # TODO: Make the outcome_type check generic
+        self.outcomes = set([x.bettable_outcome.outcome for x in self.bets])
+        if self.outcome_type == "FULLTIME_RESULT":
+            if "DRAW" not in self.outcomes:
+                raise ValueError("Not all outcomes present for FULLTIME_RESULT. Only have :" + str(self.outcomes))
+
+        self.arb_perc = round(sum([x.bettable_outcome.odds.odds_arb for x in self.bets]), 4) * 100
+
+        # Check if this is actually an arbitrage
+        if self.arb_perc >= 100:
+            warnings.warn("No arbitrage present for this arb\n" + str(self))
 
         # Get the date of the arb - this may be set on at least one or none of the events
-        event_dates = [x.event.date for x in self.bets if x.evevnt.date is not None]
+        event_dates = [x.event.date for x in self.bets if x.event.date is not None]
         if len(event_dates) > 0:
             self.event_date = event_dates[0]
         else:
             self.event_date = None
+
+        # Change the betting totals if required
+        if total_investment is not None:
+            self.set_arb_betting_amounts(total_investment)
+            self.total_investment = total_investment
+        else:
+            self.total_investment = sum([x.bet_amount for x in self.bets])
+
+        # Set the profit values
+        self.profit = min(x.return_amount - self.total_investment for x in self.bets)
+        self.return_perc = round(self.profit / self.total_investment * 100, 2)
 
     def __str__(self):
         output = str(self.arb_perc_profit)
@@ -264,10 +306,11 @@ class ArbitrageBettableOutcome:
         :return:
         """
         for bet in self.bets:
-            bet.set_bet_amount(bet.odds.odds_arb * total_investment / self.arb_perc)
+            bet.set_bet_amount(bet.odds.odds_arb * 100 * total_investment / self.arb_perc)
 
         if integer_round:
             pass
+            # TODO: Finish the integer rounding function
         #    approx_betting = []
         #    # Test each possible bet and pick the one with the best rate of return
         #    for win_approx in (math.floor(win_bet), math.ceil(win_bet)):
@@ -287,7 +330,7 @@ class ArbitrageBettableOutcome:
         self.arb_profit = min([x.profit_amount for x in self.bets])
 
 
-class Market:
+class ArbitrageBetParser:
     """
     Holds all ArbitrageEvents for BettingEvents
     """
