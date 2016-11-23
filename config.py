@@ -6,15 +6,15 @@ if platform == "linux" or platform == "linux2":
 elif platform == "win32":
     WEBDRIVER_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Files\\chromedriver_win.exe")
 
-ARBITRAGE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ScrapedFiles")
-RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Results")
-SUMMARY_RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "SummaryResults")
+ARBITRAGE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ScrapedFiles\\")
+RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Results\\")
+SUMMARY_RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "SummaryResults\\")
 
 SLEEP_TIME = 3
 
 BOOKMAKERS_LIST = {"EIGHT88": 0,
                    "PADDYPOWER": 1,
-                   # "PINNACLE": 2,
+                   #"PINNACLE": 2,
                    "WILLIAMHILL": 3,
                    "SPORTINGBET": 4,
                    "MARATHONBET": 5
@@ -23,8 +23,6 @@ BOOKMAKERS_LIST = {"EIGHT88": 0,
 CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
                  "Football_GeBun"]
 
-CATEGORY_LIST = ["Football_CL", "Football_LaLig",
-                 "Football_GeBun"]
 
 EIGHT88_DICT = {"Bookmaker": "888",
                 "Football_L2": "https://www.888sport.com/bet/#/filter/football/england/league_two",
@@ -281,6 +279,7 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "SPORTING LISBOA": 417,
                  "SPORTING CP": 417,
                  "FC COPENHAGEN": 418,
+                 "FC KOBENHAVN": 418,
                  "JUVENTUS": 419,
                  "LYON": 420,
                  "FC PORTO": 421,
@@ -306,6 +305,7 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "ATHLETIC CLUB BILBAO": 435,
                  "REAL SOCIEDAD": 436,
                  "CELTA VIGO": 437,
+                 "CELTA DE VIGO": 437,
                  "LAS PALMAS": 438,
                  "DEPORTIVA LAS PALMAS": 438,
                  "MALAGA": 439,
@@ -319,6 +319,7 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "ESPANYOL": 444,
                  "DEPORTIVO LA CORUNA": 445,
                  "DEPORTIVO LA CORUA": 445,
+                 "DEPORTIVO DE LA CORUNA": 445,
                  "SPORTING GIJON": 446,
                  "SPORTING DE GIJN": 446,
                  "GRANADA": 447,
@@ -331,10 +332,12 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "RASENBALLSPORT LEIPZIG": 451,
                  "HERTHA BERLIN": 452,
                  "HOFFENHEIM": 453,
+                 "1899 HOFFENHEIM": 453,
                  "COLOGNE": 454,
                  "FC COLOGNE": 454,
                  "1. FC KLN": 454,
                  "FC KOLN": 454,
+                 "KOLN": 454,
                  "EINTRACHT FRANKFURT": 456,
                  "SC FREIBURG": 457,
                  "FREIBURG": 457,
@@ -352,8 +355,10 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "FC INGOLSTADT 04": 465,
                  "FC INGOLSTADT": 465,
                  "INGOLSTADT": 465,
+                 "INGOLSTADT 04": 465,
                  "HAMBURG": 466,
                  "HAMBURGER SV": 466,
+                 "HAMBURGER": 466,
                  "SV DARMSTADT 98": 467,
                  "DARMSTADT 98": 467,
                  "DARMSTADT": 467
@@ -382,7 +387,19 @@ SUBCATEGORY_DICT["FOOTBALL"] = {"PREMIER LEAGUE": 1,
                                 "LEAGUE TWO": 4,
                                 "ENGLAND - LEAGUE TWO": 4,
                                 "CLUBS. INTERNATIONAL. UEFA CHAMPIONS LEAGUE. GROUP STAGE": 11,
-                                "FA CUP": 12}
+                                "CHAMPIONS LEAGUE": 11,
+                                "CHAMPIONS LEAGUE - 2016/17 - MATCHES": 11,
+                                "SPANISH LA LIGA PRIMERA": 12,
+                                "SPANISH LA LIGA": 12,
+                                "SPAIN - PRIMERA DIVISION": 12,
+                                "LALIGA": 12,
+                                "SPANISH. PRIMERA DIVISION": 12,
+                                "SPAIN. PRIMERA DIVISION": 12,
+                                "GERMAN BUNDESLIGA": 13,
+                                "GERMANY. BUNDESLIGA": 13,
+                                "GERMANY - BUNDESLIGA": 13,
+                                "BUNDESLIGA": 13,
+                                "FA CUP": 20}
 
 BOOKMAKERS = [EIGHT88_DICT,
               PADDY_DICT,

@@ -581,6 +581,11 @@ class BettingPage:
     def parse_eight88(self, each):
         if self.sub_category is None:
             identifier = self.html_soup.findAll("span", {"class": "KambiBC-modularized-event-path__fragment"})
+            identifier = [x for x in identifier if x.text.upper() != self.category]
+            # Remove the spain identifier from the european leagues
+            identifier = [x for x in identifier if x.text.upper() != "SPAIN"
+                          and x.text.upper() != "GERMANY"
+                          and x.text.upper() != "ENGLAND"]
             self.sub_category = identifier[2].text
 
         time_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--time"})
