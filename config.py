@@ -23,6 +23,9 @@ BOOKMAKERS_LIST = {"EIGHT88": 0,
 CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
                  "Football_GeBun"]
 
+CATEGORY_LIST = ["Football_CL", "Football_LaLig",
+                 "Football_GeBun"]
+
 EIGHT88_DICT = {"Bookmaker": "888",
                 "Football_L2": "https://www.888sport.com/bet/#/filter/football/england/league_two",
                 "Football_L1": "https://www.888sport.com/bet/#/filter/football/england/league_one",
@@ -362,7 +365,24 @@ PARTICIPANT_DICT["FOOTBALL"] = FOOTBALL_DICT
 
 SUBCATEGORY_DICT = dict()
 SUBCATEGORY_DICT["FOOTBALL"] = {"PREMIER LEAGUE": 1,
-                                "FA CUP": 2}
+                                "ENGLAND-PREMIERLEAGUE": 1,
+                                "ENGLISH PREMIER LEAGUE": 1,
+                                "ENGLAND - PREMIER LEAGUE": 1,
+                                "ENGLAND. PREMIER LEAGUE": 1,
+                                "THE CHAMPIONSHIP": 2,
+                                "ENGLISH CHAMPIONSHIP": 2,
+                                "ENGLAND - CHAMPIONSHIP": 2,
+                                "ENGLAND. CHAMPIONSHIP": 2,
+                                "ENGLAND. LEAGUE 1": 3,
+                                "ENGLISH LEAGUE 1": 3,
+                                "ENGLAND - LEAGUE ONE": 3,
+                                "LEAGUE ONE": 3,
+                                "ENGLAND. LEAGUE 2": 4,
+                                "ENGLISH LEAGUE 2": 4,
+                                "LEAGUE TWO": 4,
+                                "ENGLAND - LEAGUE TWO": 4,
+                                "CLUBS. INTERNATIONAL. UEFA CHAMPIONS LEAGUE. GROUP STAGE": 11,
+                                "FA CUP": 12}
 
 BOOKMAKERS = [EIGHT88_DICT,
               PADDY_DICT,

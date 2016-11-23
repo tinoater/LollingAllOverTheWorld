@@ -1,6 +1,5 @@
 import warnings
 import copy
-import mwutils as mu
 from config import *
 
 
@@ -52,6 +51,9 @@ class Odds:
 
         return False
 
+    def __hash__(self):
+        return hash(self.odds)
+
     def fractional_to_decimal_odds(self, odds):
         """
         Convert odds from fractional to decimal
@@ -77,31 +79,41 @@ class Odds:
 
 class Participant:
     """
-    Owner of the outcome
+    Participant
+
+    identifier: Either name of participant or their id
     """
-    def __init__(self, category, name):
+    def __init__(self, category, identifier):
         self.category = category.upper()
         try:
-            self.cat_id = CATEGORY_DICT[self.category]
+            self.category_id = CATEGORY_DICT[self.category]
         except KeyError:
             raise KeyError("Category " + category + " not in CATEGORY_DICT")
 
-        self.participant = name.upper()
-        try:
-            self.participant_id = PARTICIPANT_DICT[self.category][self.participant]
-        except KeyError:
-            raise KeyError("Participant " + name + " not in PARTICIPANT_DICT for category " + category)
+        if isinstance(identifier, str):
+            self.participant = identifier.upper()
+            try:
+                self.participant_id = PARTICIPANT_DICT[self.category][self.participant]
+            except KeyError:
+                raise KeyError("Participant " + identifier + " not in PARTICIPANT_DICT for category " + category)
+        elif isinstance(identifier, int):
+            self.participant = list(PARTICIPANT_DICT[self.category].keys())\
+                [list(PARTICIPANT_DICT[self.category].values()).index(identifier)]
+            self.participant_id = identifier
 
     def __str__(self):
-        return self.participant + "(" + str(self.participant_id)
+        return self.participant + "(" + str(self.participant_id) + ")"
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            if self.cat_id == other.cat_id:
+            if self.category_id == other.category_id:
                 if self.participant_id == other.participant_id:
                     return True
 
         return False
+
+    def __hash__(self):
+        return hash((self.category_id, self.participant_id))
 
 
 class Event:
@@ -109,59 +121,103 @@ class Event:
     Real-world event
     """
     def __init__(self, category, sub_category, participant_list, date=None, time=None):
-        self.category = category
-        self.sub_category = sub_category
-        self.participants = copy.deepcopy(participant_list)
+        self.category = category.upper()
+        self.sub_category = sub_category.upper()
+        # TODO: Make it handle this date as a datetime object, for now it is a string
         self.date = date
         self.time = time
 
-        # TODO: Make it handle this date as a datetime object, for now it is a string
-
+        # Read participants. Can either be participant class, the name or the id
+        self.participants = []
+        for participant in participant_list:
+            if isinstance(participant, Participant):
+                self.participants.append(participant)
+            elif isinstance(participant, str):
+                try:
+                    self.participants.append(Participant(self.category, participant))
+                except KeyError:
+                    raise KeyError(participant + " not in participant dictionary for " + self.category)
+            elif isinstance(participant, int):
+                self.participants.append(Participant(self.category, participant))
         self.participant_ids = [x.participant_id for x in self.participants]
 
         try:
-            self.category_id = CATEGORY_DICT[category]
+            self.category_id = CATEGORY_DICT[self.category]
         except IndexError:
-            raise IndexError("Category " + category + " not in CATEGORY_DICT")
+            raise IndexError("Category " + self.category + " not in CATEGORY_DICT")
 
         try:
-            self.sub_category_id = SUBCATEGORY_DICT[category][sub_category]
+            self.sub_category_id = SUBCATEGORY_DICT[self.category][self.sub_category]
         except IndexError:
-            raise IndexError("Subcategory " + sub_category + " not in SUBCATEGORY_DICT")
+            raise IndexError("Subcategory " + self.sub_category + " not in SUBCATEGORY_DICT")
 
     def __str__(self):
-        output = self.category + "-" + self.sub_category + "-" + ",".join(self.participant_ids) + "\n"
+        output = ""
         if self.date is not None:
-            output += str(self.date)
+            output += str(self.date) + "-"
+
+        output += self.category + "-" + self.sub_category + "-"
+
+        for participant in self.participants:
+            output += str(participant) + ","
+
+        output = output[:-1]
 
         return output
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            if self.category == other.category and self.sub_category == other.sub_category:
+            if self.category_id == other.category_id and self.sub_category_id == other.sub_category_id:
                 if set(self.participant_ids) == set(other.participant_ids):
                     return True
 
         return False
 
     def __hash__(self):
-        participants_tup = tuple(self.participant_ids)
-        properties_tup = (self.category, self.sub_category, participants_tup)
+        self.participants.sort(key=lambda x: x.participant_id)
+        participants_tup = tuple(self.participants)
+        properties_tup = (self.category_id, self.sub_category_id, participants_tup)
 
         return hash(properties_tup)
 
 
 class BettableOutcome:
     """
-    Bookmaker, event, participant, type of outcome and odds
+    Bookmaker, event, participant, outcome_type, outcome and odds
+
+    Supported outcome_types and outcomes:
+    FULLTIME_RESULT: HOME_WIN, AWAY_WIN, DRAW     (Paticipant does nothing)
     """
+    # TODO: Either remove participant from this or utilise it
     def __init__(self, event, participant, outcome_type, outcome, odds, bookmaker):
-        self.participant = participant
         self.outcome_type = outcome_type
         self.outcome = outcome
-        self.odds = odds
         self.bookmaker = bookmaker
         self.event = event
+
+        # Participant
+        if isinstance(participant, Participant):
+            self.participant = participant
+        elif isinstance(participant, str):
+            try:
+                self.participant = Participant(self.event.category, participant)
+            except KeyError:
+                raise KeyError(participant + " not in participant dictionary for " + self.event.category)
+        elif isinstance(participant, id):
+            self.participant = Participant(self.event.category, participant)
+        else:
+            raise ValueError("Participant type incorrect. Needs to be Participant, str or int not "
+                             + str(type(participant)))
+
+        # Odds
+        if isinstance(odds, Odds):
+            self.odds = odds
+        elif isinstance(odds, str):
+            self.odds = Odds(odds)
+        elif isinstance(odds, float) or isinstance(odds, int):
+            self.odds = Odds(odds)
+        else:
+            raise ValueError("Odds type inccorect. Needs to be Odds, float or int not " + str(type(odds)))
 
         # Validations
         if self.participant not in self.event.participants:
@@ -217,6 +273,11 @@ class BettableOutcome:
 
         return False
 
+    def __hash__(self):
+        properties_tup = (self.event, self.participant, self.outcome_type, self.outcome, self.odds, self.bookmaker)
+
+        return hash(properties_tup)
+
 
 class Bet:
     def __init__(self, BettableOutcome, bet_amount):
@@ -231,11 +292,14 @@ class Bet:
         self.set_bet_amount(bet_amount)
 
     def __str__(self):
-        output = self.bettable_outcome.bookmaker + ":" + self.bettable_outcome.participant.name + "-" + \
+        output = self.bettable_outcome.bookmaker + ":" + str(self.bettable_outcome.participant) + "-" + \
                  self.bettable_outcome.outcome_type + "-" + str(self.bet_amount) + "[" + str(self.return_amount) + \
                  "]"
 
         return output
+
+    def __hash__(self):
+        return hash((self.bettable_outcome, self.bet_amount))
 
     def set_bet_amount(self, amount):
         self.bet_amount = amount
@@ -245,52 +309,56 @@ class Bet:
 
 class ArbitrageBet:
     """
-    Combination of Bets allowing arbitrage
+    Combination of BettableOutcomes to try to form an arbitrage
     """
-    def __init__(self, bet_list, total_investment=None):
-        self.bets = copy.deepcopy(bet_list)
+    def __init__(self, bettable_outcomes, total_investment=100):
+        self.bettable_outcomes = copy.deepcopy(bettable_outcomes)
 
         # First check that all bets are for the same event
-        if len(set([x.event for x in self.bets])) != 1:
-            raise ValueError("Multiple events in ArbitrageBettableOutomce")
+        if len(set([x.event for x in self.bettable_outcomes])) != 1:
+            raise ValueError("Multiple events in ArbitrageBet")
         # Check that all bets are for the same outcome type
-        if len(set([x.bettable_outcome.outcome_type for x in self.bets])) != 1:
-            raise ValueError("Multiple outcome_types in ArbitrageBettableOutomce")
+        if len(set([x.outcome_type for x in self.bettable_outcomes])) != 1:
+            raise ValueError("Multiple outcome_types in ArbitrageBet")
         else:
-            self.outcome_type = self.bets[0].bettable_outcome.outcome_type
+            self.outcome_type = self.bettable_outcomes[0].outcome_type
         # Check that we have the full set of outcomes for this outcome_type
         # TODO: Make the outcome_type check generic
-        self.outcomes = set([x.bettable_outcome.outcome for x in self.bets])
+        self.outcomes = set([x.outcome for x in self.bettable_outcomes])
         if self.outcome_type == "FULLTIME_RESULT":
             if "DRAW" not in self.outcomes:
                 raise ValueError("Not all outcomes present for FULLTIME_RESULT. Only have :" + str(self.outcomes))
 
-        self.arb_perc = round(sum([x.bettable_outcome.odds.odds_arb for x in self.bets]), 4) * 100
+        self.arb_perc = round(sum([x.odds.odds_arb for x in self.bettable_outcomes]), 4) * 100
 
         # Check if this is actually an arbitrage
         if self.arb_perc >= 100:
-            warnings.warn("No arbitrage present for this arb\n" + str(self))
+            self.arbitrage_present = False
+        else:
+            self.arbitrage_present = True
 
         # Get the date of the arb - this may be set on at least one or none of the events
-        event_dates = [x.event.date for x in self.bets if x.event.date is not None]
+        event_dates = [x.event.date for x in self.bettable_outcomes if x.event.date is not None]
         if len(event_dates) > 0:
             self.event_date = event_dates[0]
         else:
             self.event_date = None
 
-        # Change the betting totals if required
-        if total_investment is not None:
-            self.set_arb_betting_amounts(total_investment)
-            self.total_investment = total_investment
-        else:
-            self.total_investment = sum([x.bet_amount for x in self.bets])
+        # Create the associated bets
+        self.bets = []
+        for bo in self.bettable_outcomes:
+            self.bets.append(Bet(bo, 0))
+
+        # Scale them to the desired cost
+        self.set_arb_betting_amounts(total_investment)
+        self.total_investment = sum([x.bet_amount for x in self.bets])
 
         # Set the profit values
-        self.profit = min(x.return_amount - self.total_investment for x in self.bets)
+        self.profit = round(min(x.return_amount - self.total_investment for x in self.bets), 2)
         self.return_perc = round(self.profit / self.total_investment * 100, 2)
 
     def __str__(self):
-        output = str(self.arb_perc_profit)
+        output = str(self.return_perc)
         if self.event_date is not None:
             output += " (" + self.event_date
 
@@ -306,7 +374,7 @@ class ArbitrageBet:
         :return:
         """
         for bet in self.bets:
-            bet.set_bet_amount(bet.odds.odds_arb * 100 * total_investment / self.arb_perc)
+            bet.set_bet_amount(round(bet.odds.odds_arb * 100 * total_investment / self.arb_perc, 2))
 
         if integer_round:
             pass
@@ -332,58 +400,48 @@ class ArbitrageBet:
 
 class ArbitrageBetParser:
     """
-    Holds all ArbitrageEvents for BettingEvents
+    Parses a collection of BettingOutcomes for all ArbitrageBets
     """
-    def __init__(self, event_list):
-        self.event_list = copy.deepcopy(event_list)
-        self.arbitrage_events = []
-        self.orphan_events = []
+    def __init__(self, bettable_outcome_list):
+        self.bettable_outcomes = copy.deepcopy(bettable_outcome_list)
+        self.possible_arbitrage_events = []
+        self.singleton_events = []
 
-        # Set a False matched flag against all events in the list
-        for bookmaker in self.event_list:
-            for event in bookmaker:
-                event.matched = False
+        # Set a False matched flag against each bettable_outcome in the list
+        for each in self.bettable_outcomes:
+            each.match = False
 
+        # TODO: This outcome logic needs to be rethunk to deal with p1 LOSE == p2 WIN
         # First check that we have multiple bookmakers
-        if not(all(isinstance(elem, list) for elem in self.event_list)):
-            warnings.warn("No market found")
+        all_bookmakers = set([x.bookmaker for x in self.bettable_outcomes])
+        if len(all_bookmakers) == 1:
+            warnings.warn("Only one bookmaker passed in")
         else:
-            for bookmaker in self.event_list:
-                # For each bookmaker
-                bookmaker_name = bookmaker[0].bookmaker
-                # For each event
-                for event in bookmaker:
-                    # If the event has not already been matched
-                    if event.matched is False:
-                        # Set the temp player values
-                        p1 = event.p1_ind
-                        p2 = event.p2_ind
+            # For each (event, outcome_type)
+            event_outcomes = set([(x.event, x.outcome_type) for x in self.bettable_outcomes])
+            for event_outcome in event_outcomes:
+                # Find all similar
+                event_outcome_bos = [x for x in self.bettable_outcomes if x.event == event_outcome[0]
+                           and x.outcome_type == event_outcome[1]]
+                # Get the best odds for each outcome
+                outcomes = set([x.outcome for x in event_outcome_bos])
+                # Check for singleton event_outcomes
+                if len(outcomes) == len([x.outcome for x in event_outcome_bos]):
+                    arb = ArbitrageBet(event_outcome_bos)
+                    self.singleton_events.append(arb)
+                else:
+                    event_outcome_arb_candidate = []
+                    for outcome in outcomes:
+                        event_outcome_arb_candidate.append(max([x for x in event_outcome_bos if x.outcome == outcome],
+                                                               key=lambda y: y.odds))
+                    # Create an ArbitrageBet
+                    arb = ArbitrageBet(event_outcome_arb_candidate)
+                    self.possible_arbitrage_events.append(arb)
 
-                        # Find matches for it in the OTHER bookmakers
-                        matches = [event for bookmaker in self.event_list for event in bookmaker
-                                   if event.bookmaker != bookmaker_name and (
-                                       (event.p1_ind == p1 and event.p2_ind == p2) or
-                                       (event.p1_ind == p2 and event.p2_ind == p1)
-                                       )
-                                   ]
-                        # Add the original event to the matches list
-                        matches.append(event)
-                        # Mark these events as matched
-                        for each in matches:
-                            each.matched = True
-
-                        if len(matches) == 1:
-                            # No matches were found
-                            # warnings.warn("No matches found for event\n" + str(matches[0]))
-                            self.orphan_events.append(matches[0])
-                        else:
-                            self.arbitrage_events.append(ArbitrageEvent(matches))
-
-            # Set the possible_arb_list for all found arbs
-            self.possible_arb_list = [x for x in self.arbitrage_events if x.arb_present is True]
-
-            # Order the arbitrage_events by their arb percentage
-            self.arbitrage_events.sort(key=lambda x: x.arb_perc)
+        # All bettable_outcomes now parsed into ArbitrageBets
+        self.arbitrage_bets = [x for x in self.possible_arbitrage_events if x.arbitrage_present]
+        # Sort by arb percentage
+        self.arbitrage_bets.sort(key=lambda x: x.arb_perc)
 
     def __str__(self):
         """
@@ -392,11 +450,11 @@ class ArbitrageBetParser:
         Arb possibilities: 1
         :return:
         """
-        output = "Multiple Odds for Events: " + str(len(self.arbitrage_events)) + "\n"
-        output += "Orphaned Odds for Events: " + str(len(self.orphan_events)) + "\n"
-        output += "Arb possibilities: " + str(len(self.possible_arb_list)) + "\n"
+        output = "Multiple Odds for Events: " + str(len(self.possible_arbitrage_events)) + "\n"
+        output += "Singleton Odds for Events: " + str(len(self.singleton_events)) + "\n"
+        output += "Arb possibilities: " + str(len(self.arbitrage_bets)) + "\n"
 
-        for each in self.possible_arb_list:
+        for each in self.arbitrage_bets:
             output += str(each) + "\n"
 
         return output
@@ -405,23 +463,23 @@ class ArbitrageBetParser:
         output = "------ SUMMARY -----" + "\n"
         output += str(self) + "\n\n"
 
-        output += "------ All Bet Collections -----" + "\n"
-        for arb in self.arbitrage_events:
-            output += str(arb) + "\n\n"
-
-        if len(self.orphan_events) > 0:
-            output += "------ All Orphaned Events -----" + "\n"
-            for orphan in self.orphan_events:
-                output += str(orphan) + "\n"
-        else:
-            output += "------ No Orphaned Events -----" + "\n"
-
-        if len(self.possible_arb_list) > 0:
+        if len(self.arbitrage_bets) > 0:
             output += "------ All Possible Arbs -----" + "\n"
-            for arb in self.possible_arb_list:
+            for arb in self.arbitrage_bets:
                 output += str(arb) + "\n"
         else:
             output += "------ No Possible Arbs -----" + "\n"
+
+        if len(self.singleton_events) > 0:
+            output += "------ All Singleton Events -----" + "\n"
+            for orphan in self.singleton_events:
+                output += str(orphan) + "\n"
+        else:
+            output += "------ No Singleton Events -----" + "\n"
+
+        output += "------ All Bet Collections -----" + "\n"
+        for arb in self.possible_arbitrage_events:
+            output += str(arb) + "\n\n"
 
         if out_file_path is not None:
             if not os.path.exists(os.path.dirname(out_file_path)):
@@ -436,15 +494,14 @@ class ArbitrageBetParser:
 
 class BettingPage:
     """
-    Parses html_soup into list of BettingEvents
+    Parses html_soup into list of BettableOutcomes
     """
-    def __init__(self, url_soup, bookmaker, sport, IDENTITY_DICT=None):
+    def __init__(self, url_soup, bookmaker, category):
         self.bookmaker = bookmaker
-        self.sport = sport
+        self.category = category
+        self.sub_category = None
         self.html_soup = url_soup
-        self.category = None
-        self.betting_events = []
-        self.identity_dict = IDENTITY_DICT
+        self.bettable_outcomes = []
 
         if bookmaker == "PINNACLE":
             self.parse_pinnacle()
@@ -475,9 +532,10 @@ class BettingPage:
         for each in self.rows:
             player_list = []
 
-            if self.category is None:
+            # If not done already then set the sub_category
+            if self.sub_category is None:
                 identifier = self.html_soup.findAll("div", {"ng-click": "triggerCollapse(league.league, date.date)"})
-                self.category = identifier[0].text.replace("\t", "").replace("\n", "").replace(" ", "")
+                self.sub_category = identifier[0].text.replace("\t", "").replace("\n", "").replace(" ", "")
 
             tr_rows = each.findAll("tr")
             # First tr is the home team
@@ -512,17 +570,18 @@ class BettingPage:
             else:
                 warnings.warn("Draw odds not found")
 
-            name = player_list[0] + " v " + player_list[1]
-
-            event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                     , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-            self.betting_events.append(event)
+            event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
+                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
     def parse_eight88(self, each):
-        if self.category is None:
+        if self.sub_category is None:
             identifier = self.html_soup.findAll("span", {"class": "KambiBC-modularized-event-path__fragment"})
-            self.category = identifier[2].text
+            self.sub_category = identifier[2].text
 
         time_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--time"})
         if len(time_list) != 1:
@@ -536,34 +595,29 @@ class BettingPage:
         else:
             player_list = [x.text.replace("\n", "").replace("\t", "") for x in players]
 
-        try:
-            name = player_list[0] + " v " + player_list[1]
-        except UnboundLocalError:
-            warnings.warn("Players names not found")
-            warnings.warn(str(each))
-            raise ValueError("Players names not found")
-
         odds_list = each.findAll('span', {"class": "KambiBC-mod-outcome__odds"})
         if len(odds_list) < 3:
             warnings.warn("Incorrect length of odds list on row. 3 > " + str(len(odds_list)))
             warnings.warn(str(each))
-            raise ValueError("Can't find odds")
         else:
             win = odds_list[0].text
             draw = odds_list[1].text
             lose = odds_list[2].text
 
-        event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                 , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-        self.betting_events.append(event)
+        event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
+        self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                      "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+        self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
+                                                      "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+        self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                      "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
     def parse_paddypower(self):
         # Get the rows from the page
         self.rows = self.html_soup.findAll('div', {"class": "pp_fb_event"})
 
         # Extract information from page
-        self.category = self.html_soup.findAll('div', {"class": "fb-market-filters"})[0].\
+        self.sub_category = self.html_soup.findAll('div', {"class": "fb-market-filters"})[0].\
             findAll('span', {"class": "tooltip"})[0].text.replace("\n", "")
 
         for each in self.rows:
@@ -594,19 +648,20 @@ class BettingPage:
                 draw = odds[1].text.replace("\t", "").replace("\n", "")
                 lose = odds[2].text.replace("\t", "").replace("\n", "")
 
-            event = BettingEvent(self.bookmaker, self.sport, self.category, name, player_list[0], player_list[1]
-                                 , win, lose, draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-            self.betting_events.append(event)
+            event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
+                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
     def parse_williamhill(self):
         # Get the rows from the page
         self.rows = self.html_soup.findAll('tbody')[0].findAll('tr', {"class": "rowOdd"})
 
         # Extract information from page
-        self.category = self.html_soup.findAll('h1')[1].text
-
-        print(self.category)
+        self.sub_category = self.html_soup.findAll('h1')[1].text
 
         for each in self.rows:
             # td list:
@@ -623,10 +678,13 @@ class BettingPage:
             draw = tr_rows[5].text.replace("\t", "").replace("\n", "")
             lose = tr_rows[6].text.replace("\t", "").replace("\n", "")
 
-            event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
-                                 draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-            self.betting_events.append(event)
+            event = Event(self.category, self.sub_category, [p1, p2])
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
     def parse_sportingbet(self):
         # Get the rows from the page
@@ -634,9 +692,7 @@ class BettingPage:
 
         # Extract information from page
         banner = self.html_soup.findAll('div', {"id": "content"})[0].findAll('div', {"class": "breadcrumb"})[0]
-        self.category = banner.findAll("strong")[0].text
-
-        print(self.category)
+        self.sub_category = banner.findAll("strong")[0].text
 
         for each in self.rows:
             datetime = each.findAll("span", {"class": "StartTime"})[0].text.replace("\t", "").replace("\n", "")
@@ -651,21 +707,21 @@ class BettingPage:
             lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
                 findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
 
-            event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
-                                 draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-            self.betting_events.append(event)
-
+            event = Event(self.category, self.sub_category, [p1, p2])
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
     def parse_marathonbet(self):
         # Get the rows from the page
         self.rows = self.html_soup.findAll("table", {"class": "foot-market"})[0].findAll("tbody", recursive=False)[1:]
 
         # Extract information from page
-        self.category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
+        self.sub_category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
             text.replace("\n","").replace("\t","")
-
-        print(self.category)
 
         for each in self.rows:
             try:
@@ -689,10 +745,13 @@ class BettingPage:
                     if "\"" + p2 + " To Win\"" in odd.attrs['data-sel']:
                         lose = odd.text.replace("\t","").replace("\n","")
 
-                event = BettingEvent(self.bookmaker, self.sport, self.category, name, p1, p2, win, lose,
-                                     draw_odds=draw, IDENTITY_DICT=self.identity_dict)
-
-                self.betting_events.append(event)
+                event = Event(self.category, self.sub_category, [p1, p2])
+                self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                              "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                              "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                              "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
             except KeyError as err:
                 print("KeyError with MARTAHONBET: " + p1 + " " + p2 + "\n" + format(err))
 
