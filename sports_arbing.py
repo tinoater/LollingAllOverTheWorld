@@ -14,53 +14,53 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     """
     For given date draw odds from online or file, compare and output Market object
     :param date:
-    :param category: list of wanted categories. Defaults to all
+    :param sub_category: list of wanted categories. Defaults to all
     :return:
     """
     # Summary information
     all_arbs = []
     events_count = 0
     orphan_count = 0
+    summary_filename = date + ".log"
 
-    for category in category_list:
-        print(category + " start")
-        filename = date + "-" + category + ".log"
-        summary_filename = date + ".log"
+    for sub_category in category_list:
+        print(sub_category + " start")
+        filename = date + "-" + sub_category + ".log"
 
-        # Loop through each bookmaker for this category
-        events = []
+        # Loop through each bookmaker for this sub_category
+        category_bettable_outcomes = []
         for bet_provider in BOOKMAKERS_LIST:
             bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
             try:
-                url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][category]
+                url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
             except KeyError:
                 # No link found - this booky doesn't do these odds
                 continue
 
-            file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, category + ".txt")
+            file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
 
             # Get the soup from file (if it exists) or get it from the website
             html_soup = mu.get_page_source(file_path=file_path, url=url, ignore_files=ignore_files,
                                            sleep_time=SLEEP_TIME)
             # Create the class from the soup
-            page = arbitrage.BettingPage(html_soup, bet_provider, "FOOTBALL", IDENTITY_DICT=FOOTBALL_DICT)
+            page = arbitrage.BettingPage(html_soup, bet_provider, "FOOTBALL")
 
             # Add events to the events list
-            if len(page.betting_events) > 0:
-                events.append(page.betting_events)
+            if len(page.bettable_outcomes) > 0:
+                category_bettable_outcomes += page.bettable_outcomes
 
-        # Create the market for these events
-        m = arbitrage.Market(events)
+        # Create the arbs for these events
+        category_arbitrage_bets = arbitrage.ArbitrageBetParser(category_bettable_outcomes)
 
         # Update the summary information
-        if len(m.arbitrage_events) > 0:
-            all_arbs += m.possible_arb_list
-        events_count += len(m.arbitrage_events)
-        orphan_count += len(m.orphan_events)
+        if len(category_arbitrage_bets.possible_arbitrage_events) > 0:
+            all_arbs += category_arbitrage_bets.arbitrage_bets
+        events_count += len(category_arbitrage_bets.possible_arbitrage_events)
+        orphan_count += len(category_arbitrage_bets.singleton_events)
 
-        # Output the Market to a file
-        m.get_full_output(to_screen=False, out_file_path=os.path.join(RESULTS_PATH, filename))
-        print(category + " done")
+        # Output the category_arbitrage_bets to a file
+        category_arbitrage_bets.get_full_output(to_screen=False, out_file_path=os.path.join(RESULTS_PATH, filename))
+        print(sub_category + " done")
 
     # Output summary information to file
     if not os.path.exists(os.path.dirname(SUMMARY_RESULTS_PATH)):
