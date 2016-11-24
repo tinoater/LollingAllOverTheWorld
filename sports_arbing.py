@@ -2,12 +2,33 @@ import time
 import mwutils as mu
 import arbitrage
 from config import *
+from joblib import Parallel, delayed
+import multiprocessing
+
+NUM_CORES = multiprocessing.cpu_count()
+
 
 # TODO: Add in more bookies
 
 # TODO: Add in more football leagues
 # TODO: Add in football odds for other types - win and draw etc
 # TODO: Add in odds for tennis
+
+
+def download_html_soup_to_file(sub_category, bet_provider, date):
+    """Download html_soup for a sub_category and bet_provider"""
+    bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
+    try:
+        url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
+    except KeyError:
+        # No link found - this booky doesn't do these odds
+        return
+
+    file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
+
+    if not os.path.exists(file_path):
+        # Get the soup from file (if it exists) or get it from the website
+        html_soup = mu.get_page_source(file_path=file_path, url=url, sleep_time=1)
 
 
 def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
@@ -23,28 +44,18 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     orphan_count = 0
     summary_filename = date + ".log"
 
+    # First we check if we have the webpage data, if not then we download it
+    download_input_list = []
     for sub_category in category_list:
-        print(sub_category + " start")
-        filename = date + "-" + sub_category + ".log"
-
-        # Loop through each bookmaker for this sub_category and download or load up the data
+        # For each sub_category and each bookmaker add inputs to the list
         for bet_provider in BOOKMAKERS_LIST:
-            bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
-            try:
-                url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
-            except KeyError:
-                # No link found - this booky doesn't do these odds
-                continue
+            download_input_list.append((sub_category, bet_provider, date))
 
-            file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
+    # Run the jobs in parallel
+    _ = Parallel(n_jobs=NUM_CORES)(delayed(download_html_soup_to_file)(i, j, k) for (i, j, k) in download_input_list)
 
-            # Get the soup from file (if it exists) or get it from the website
-            html_soup = mu.get_page_source(file_path=file_path, url=url, ignore_files=ignore_files,
-                                           sleep_time=1)
-        print(sub_category + " done")
-
-    print("All data loaded")
     # Now load and use the data
+    print("All data loaded")
     for sub_category in category_list:
         print(sub_category + " start")
         filename = date + "-" + sub_category + ".log"
