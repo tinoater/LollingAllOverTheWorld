@@ -27,7 +27,29 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
         print(sub_category + " start")
         filename = date + "-" + sub_category + ".log"
 
-        # Loop through each bookmaker for this sub_category
+        # Loop through each bookmaker for this sub_category and download or load up the data
+        for bet_provider in BOOKMAKERS_LIST:
+            bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
+            try:
+                url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
+            except KeyError:
+                # No link found - this booky doesn't do these odds
+                continue
+
+            file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
+
+            # Get the soup from file (if it exists) or get it from the website
+            html_soup = mu.get_page_source(file_path=file_path, url=url, ignore_files=ignore_files,
+                                           sleep_time=1)
+        print(sub_category + " done")
+
+    print("All data loaded")
+    # Now load and use the data
+    for sub_category in category_list:
+        print(sub_category + " start")
+        filename = date + "-" + sub_category + ".log"
+
+        # Loop through each bookmaker for this sub_category and download or load up the data
         category_bettable_outcomes = []
         for bet_provider in BOOKMAKERS_LIST:
             bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
