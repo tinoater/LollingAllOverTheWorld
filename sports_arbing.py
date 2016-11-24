@@ -12,7 +12,7 @@ from config import *
 
 def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     """
-    For given date draw odds from online or file, compare and output Market object
+    For given date draw odds from online or file, compare and output ArbitrageBets
     :param date:
     :param sub_category: list of wanted categories. Defaults to all
     :return:

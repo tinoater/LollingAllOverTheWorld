@@ -40,9 +40,15 @@ class Eight88FootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(draw_odds, 3.4)
         self.assertEqual(lose_odds, 3.4)
 
+    def test_betting_event_correct_date_time(self):
+        self.assertEqual(self.page_pl.bettable_outcomes[0].event.date, "26/11")
+
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("888_Football_L2.txt")
         self.page = arbitrage.BettingPage(self.html_soup, "EIGHT88", "FOOTBALL")
+
+        self.html_soup_pl = mwutils.get_page_source_file("888_Football_PL.txt")
+        self.page_pl = arbitrage.BettingPage(self.html_soup_pl, "EIGHT88", "FOOTBALL")
 
 
 # ------------------------------------
@@ -163,6 +169,9 @@ class WilliamHillFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(draw_odds, 3.1)
         self.assertEqual(lose_odds, 2.1)
 
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "29 Oct")
+
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("WilliamHill_Football_PL.txt")
         self.page = arbitrage.BettingPage(self.html_soup, "WILLIAMHILL", "FOOTBALL")
@@ -204,6 +213,9 @@ class SportingBetFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(draw_odds, 3.5)
         self.assertEqual(lose_odds, 3.4)
 
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "19/11/2016 12:30 GMT")
+
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("SportingBet_Football_PL.txt")
         self.page = arbitrage.BettingPage(self.html_soup, "SPORTINGBET", "FOOTBALL")
@@ -244,6 +256,9 @@ class MarathonBetFootballMatchPageTestCase(unittest.TestCase):
         self.assertEqual(win_odds, 1.83)
         self.assertEqual(draw_odds, 3.7)
         self.assertEqual(lose_odds, 5)
+
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "19 Nov 12:30")
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("MarathonBet_Football_PL.txt")

@@ -360,7 +360,7 @@ class ArbitrageBet:
     def __str__(self):
         output = "Return percentage: " + str(self.return_perc)
         if self.event_date is not None:
-            output += " (" + self.event_date
+            output += " (" + self.event_date + ")"
 
         for bet in self.bets:
             output += "\n" + str(bet)
@@ -588,11 +588,12 @@ class BettingPage:
                           and x.text.upper() != "ENGLAND"]
             self.sub_category = identifier[2].text
 
-        time_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--time"})
-        if len(time_list) != 1:
-            warnings.warn("Incorrect length of time list on row. 1 != " + str(len(time_list)))
+        date_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--date"})
+        if len(date_list) != 1:
+            warnings.warn("Incorrect length of date list on row. 1 != " + str(len(date_list)))
+            date = None
         else:
-            time = time_list[0].text
+            date = date_list[0].text
 
         players = each.findAll('div', {"class": "KambiBC-event-participants__name"})
         if len(players) != 2:
@@ -609,7 +610,7 @@ class BettingPage:
             draw = odds_list[1].text
             lose = odds_list[2].text
 
-        event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
+        event = Event(self.category, self.sub_category, [player_list[0], player_list[1]], date=date)
         self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
                                                       "FULLTIME_RESULT", "WIN", win, self.bookmaker))
         self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
@@ -683,7 +684,7 @@ class BettingPage:
             draw = tr_rows[5].text.replace("\t", "").replace("\n", "")
             lose = tr_rows[6].text.replace("\t", "").replace("\n", "")
 
-            event = Event(self.category, self.sub_category, [p1, p2])
+            event = Event(self.category, self.sub_category, [p1, p2], date=date)
             self.bettable_outcomes.append(BettableOutcome(event, p1,
                                                           "FULLTIME_RESULT", "WIN", win, self.bookmaker))
             self.bettable_outcomes.append(BettableOutcome(event, p2,
@@ -712,7 +713,7 @@ class BettingPage:
             lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
                 findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
 
-            event = Event(self.category, self.sub_category, [p1, p2])
+            event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
             self.bettable_outcomes.append(BettableOutcome(event, p1,
                                                           "FULLTIME_RESULT", "WIN", win, self.bookmaker))
             self.bettable_outcomes.append(BettableOutcome(event, p2,
@@ -730,7 +731,7 @@ class BettingPage:
 
         for each in self.rows:
             try:
-                datetime = each.findAll("td", {"class": "date"})[0].text.replace("\t", "").replace("\n", "")
+                datetime = each.findAll("td", {"class": "date"})[0].text.replace("\t", "").replace("\n", "").strip()
                 names = each.findAll("div", {"class": "member-name"})
                 name = names[0].text
                 for player in names[1:]:
@@ -750,7 +751,7 @@ class BettingPage:
                     if "\"" + p2 + " To Win\"" in odd.attrs['data-sel']:
                         lose = odd.text.replace("\t","").replace("\n","")
 
-                event = Event(self.category, self.sub_category, [p1, p2])
+                event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
                 self.bettable_outcomes.append(BettableOutcome(event, p1,
                                                               "FULLTIME_RESULT", "WIN", win, self.bookmaker))
                 self.bettable_outcomes.append(BettableOutcome(event, p2,
