@@ -840,9 +840,9 @@ class ArbitrageBetParserArbBettingAmountsTestCase(unittest.TestCase):
         self.assertEqual(draw_bet, 39.56)
 
     def test_arb_event_string_output(self):
-        self.assertTrue("B1:ARSENAL(1)-FULLTIME RESULT-24.08[103.54]" in str(self.arb))
-        self.assertTrue("B3:ARSENAL(1)-FULLTIME RESULT-41.41[103.52]" in str(self.arb))
-        self.assertTrue("B2:LIVERPOOL(9)-FULLTIME RESULT-34.51[103.53]" in str(self.arb))
+        self.assertTrue("B1:ARSENAL(1)-FULLTIME RESULT-WIN: 24.08[103.54]" in str(self.arb))
+        self.assertTrue("B3:ARSENAL(1)-FULLTIME RESULT-DRAW: 41.41[103.52]" in str(self.arb))
+        self.assertTrue("B2:LIVERPOOL(9)-FULLTIME RESULT-LOSE: 34.51[103.53]" in str(self.arb))
 
 
 class ArbitrageBetParserArbBettingAmountsShortHandTestCase(unittest.TestCase):
@@ -892,9 +892,9 @@ class ArbitrageBetParserArbBettingAmountsShortHandTestCase(unittest.TestCase):
         self.assertEqual(draw_bet, 39.56)
 
     def test_arb_event_string_output(self):
-        self.assertTrue("B1:ARSENAL(1)-FULLTIME RESULT-24.08[103.54]" in str(self.arb))
-        self.assertTrue("B3:ARSENAL(1)-FULLTIME RESULT-41.41[103.52]" in str(self.arb))
-        self.assertTrue("B2:LIVERPOOL(9)-FULLTIME RESULT-34.51[103.53]" in str(self.arb))
+        self.assertTrue("B1:ARSENAL(1)-FULLTIME RESULT-WIN: 24.08[103.54]" in str(self.arb))
+        self.assertTrue("B3:ARSENAL(1)-FULLTIME RESULT-DRAW: 41.41[103.52]" in str(self.arb))
+        self.assertTrue("B2:LIVERPOOL(9)-FULLTIME RESULT-LOSE: 34.51[103.53]" in str(self.arb))
 
 
 class ArbitrageBetParserFromRealFilesTestCase(unittest.TestCase):
