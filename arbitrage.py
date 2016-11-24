@@ -293,8 +293,8 @@ class Bet:
 
     def __str__(self):
         output = self.bettable_outcome.bookmaker + ":" + str(self.bettable_outcome.participant) + "-" + \
-                 self.bettable_outcome.outcome_type + "-" + str(self.bet_amount) + "[" + str(self.return_amount) + \
-                 "]"
+                 self.bettable_outcome.outcome_type + "-" + str(self.bettable_outcome.outcome) + ": " + \
+                 str(self.bet_amount) + "[" + str(self.return_amount) + "]"
 
         return output
 
@@ -358,7 +358,7 @@ class ArbitrageBet:
         self.return_perc = round(self.profit / self.total_investment * 100, 2)
 
     def __str__(self):
-        output = str(self.return_perc)
+        output = "Return percentage: " + str(self.return_perc)
         if self.event_date is not None:
             output += " (" + self.event_date
 
