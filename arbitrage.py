@@ -328,6 +328,9 @@ class ArbitrageBet:
         if self.outcome_type == "FULLTIME_RESULT":
             if "DRAW" not in self.outcomes:
                 raise ValueError("Not all outcomes present for FULLTIME_RESULT. Only have :" + str(self.outcomes))
+        elif self.outcome_type == "FULLTIME_RESULT_NO_DRAW":
+            if "WIN" not in self.outcomes or "LOSE" not in self.outcomes:
+                raise ValueError("Not all outcomes present for FULLTIME_RESULT_NO_DRAW. Only have :" + str(self.outcomes))
 
         self.arb_perc = round(sum([x.odds.odds_arb for x in self.bettable_outcomes]), 4) * 100
 
@@ -361,6 +364,8 @@ class ArbitrageBet:
         output = "Return percentage: " + str(self.return_perc)
         if self.event_date is not None:
             output += " (" + self.event_date + ")"
+
+        output += "\n" + str(self.bettable_outcomes[0].event)
 
         for bet in self.bets:
             output += "\n" + str(bet)
@@ -492,7 +497,7 @@ class ArbitrageBetParser:
             print(output)
 
 
-class BettingPage:
+class OddsPageParser:
     """
     Parses html_soup into list of BettableOutcomes
     """
@@ -586,7 +591,7 @@ class BettingPage:
             identifier = [x for x in identifier if x.text.upper() != "SPAIN"
                           and x.text.upper() != "GERMANY"
                           and x.text.upper() != "ENGLAND"]
-            self.sub_category = identifier[2].text
+            self.sub_category = identifier[-1].text
 
         date_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--date"})
         if len(date_list) != 1:
@@ -602,65 +607,76 @@ class BettingPage:
             player_list = [x.text.replace("\n", "").replace("\t", "") for x in players]
 
         odds_list = each.findAll('span', {"class": "KambiBC-mod-outcome__odds"})
-        if len(odds_list) < 3:
-            warnings.warn("Incorrect length of odds list on row. 3 > " + str(len(odds_list)))
+        if (self.category == "FOOTBALL" and len(odds_list) < 3) or (self.category == "SNOOKER" and len(odds_list) < 2):
+            warnings.warn("Incorrect length of odds list on row, found " + str(len(odds_list)))
             warnings.warn(str(each))
         else:
-            win = odds_list[0].text
-            draw = odds_list[1].text
-            lose = odds_list[2].text
+            if self.category == "FOOTBALL":
+                win = odds_list[0].text
+                draw = odds_list[1].text
+                lose = odds_list[2].text
+                outcome_type = "FULLTIME_RESULT"
+            elif self.category == "SNOOKER":
+                win = odds_list[0].text
+                lose = odds_list[1].text
+                outcome_type = "FULLTIME_RESULT_NO_DRAW"
 
         event = Event(self.category, self.sub_category, [player_list[0], player_list[1]], date=date)
         self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                      "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                                                      outcome_type, "WIN", win, self.bookmaker))
         self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
-                                                      "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
-        self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                      "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+                                                      outcome_type, "LOSE", lose, self.bookmaker))
+
+        if self.category == "FOOTBALL":
+            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                          outcome_type, "DRAW", draw, self.bookmaker))
 
     def parse_paddypower(self):
-        # Get the rows from the page
-        self.rows = self.html_soup.findAll('div', {"class": "pp_fb_event"})
+        if self.category == "FOOTBALL":
+            # Get the rows from the page
+            self.rows = self.html_soup.findAll('div', {"class": "pp_fb_event"})
 
-        # Extract information from page
-        self.sub_category = self.html_soup.findAll('div', {"class": "fb-market-filters"})[0].\
-            findAll('span', {"class": "tooltip"})[0].text.replace("\n", "")
+            # Extract information from page
+            self.sub_category = self.html_soup.findAll('div', {"class": "fb-market-filters"})[0].\
+                findAll('span', {"class": "tooltip"})[0].text.replace("\n", "")
 
-        for each in self.rows:
-            time_list = each.findAll('div', {"class": "fb_event_time"})
-            if len(time_list) != 1:
-                warnings.warn("Incorrect length of time list on row. 1 != " + str(len(time_list)))
-            else:
-                time = time_list[0].text
+            for each in self.rows:
+                time_list = each.findAll('div', {"class": "fb_event_time"})
+                if len(time_list) != 1:
+                    warnings.warn("Incorrect length of time list on row. 1 != " + str(len(time_list)))
+                else:
+                    time = time_list[0].text
 
-            name_list = each.findAll('div', {"class": "fb_event_name"})
-            if len(name_list) != 1:
-                warnings.warn("Incorrect length of name list on row. 1 != " + str(len(name_list)))
-            else:
-                name = name_list[0].text.replace("\t", "")
+                name_list = each.findAll('div', {"class": "fb_event_name"})
+                if len(name_list) != 1:
+                    warnings.warn("Incorrect length of name list on row. 1 != " + str(len(name_list)))
+                else:
+                    name = name_list[0].text.replace("\t", "")
 
-            player_list = name.replace("\t", "").replace("\n", "").split(' v ')
+                player_list = name.replace("\t", "").replace("\n", "").split(' v ')
 
-            odds_list = each.findAll('div', {"class": "fb_odds item"})
-            if len(odds_list) != 1:
-                warnings.warn("Incorrect length of odds list on row. 1 != " + str(len(odds_list)))
-            else:
-                odds = odds_list[0].findAll('div')
+                odds_list = each.findAll('div', {"class": "fb_odds item"})
+                if len(odds_list) != 1:
+                    warnings.warn("Incorrect length of odds list on row. 1 != " + str(len(odds_list)))
+                else:
+                    odds = odds_list[0].findAll('div')
 
-            if len(odds) != 3:
-                warnings.warn("Incorrect lenght of individual odds on row. 3 != " + str(len(odds)))
-            else:
-                win = odds[0].text.replace("\t", "").replace("\n", "")
-                draw = odds[1].text.replace("\t", "").replace("\n", "")
-                lose = odds[2].text.replace("\t", "").replace("\n", "")
+                if len(odds) != 3:
+                    warnings.warn("Incorrect lenght of individual odds on row. 3 != " + str(len(odds)))
+                else:
+                    win = odds[0].text.replace("\t", "").replace("\n", "")
+                    draw = odds[1].text.replace("\t", "").replace("\n", "")
+                    lose = odds[2].text.replace("\t", "").replace("\n", "")
 
-            event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
-            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
-                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+                event = Event(self.category, self.sub_category, [player_list[0], player_list[1]])
+                self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                              "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
+                                                              "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                              "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+        elif self.category == "SNOOKER":
+            pass
 
     def parse_williamhill(self):
         # Get the rows from the page
@@ -668,29 +684,54 @@ class BettingPage:
 
         # Extract information from page
         self.sub_category = self.html_soup.findAll('h1')[1].text
+        if self.category == "FOOTBALL":
+            for each in self.rows:
+                # td list:
+                # 0) Date 1) Time 2) Teams 4) Home 5) Draw 6) Away
+                tr_rows = each.findAll('td')
 
-        for each in self.rows:
-            # td list:
-            # 0) Date 1) Time 2) Teams 4) Home 5) Draw 6) Away
-            tr_rows = each.findAll('td')
+                date = tr_rows[0].text.replace("\t", "").replace("\n", "")
+                time = tr_rows[1].text.replace("\t", "").replace("\n", "")
+                name = tr_rows[2].text.replace("\t", "").replace("\n", "")
+                p1, p2 = name.split(" v ")
+                p1 = p1.strip()
+                p2 = p2.strip()
+                win = tr_rows[4].text.replace("\t", "").replace("\n", "")
+                draw = tr_rows[5].text.replace("\t", "").replace("\n", "")
+                lose = tr_rows[6].text.replace("\t", "").replace("\n", "")
 
-            date = tr_rows[0].text.replace("\t", "").replace("\n", "")
-            time = tr_rows[1].text.replace("\t", "").replace("\n", "")
-            name = tr_rows[2].text.replace("\t", "").replace("\n", "")
-            p1, p2 = name.split(" v ")
-            p1 = p1.strip()
-            p2 = p2.strip()
-            win = tr_rows[4].text.replace("\t", "").replace("\n", "")
-            draw = tr_rows[5].text.replace("\t", "").replace("\n", "")
-            lose = tr_rows[6].text.replace("\t", "").replace("\n", "")
+                event = Event(self.category, self.sub_category, [p1, p2], date=date)
+                self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                              "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                              "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                              "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+        elif self.category == "SNOOKER":
+            for each in self.rows:
+                try:
+                    # td list:
+                    # 0) Date 1) Time 2) Padding 3) WinOdds 4) Players 5) LoseOdds
+                    tr_rows = each.findAll('td')
 
-            event = Event(self.category, self.sub_category, [p1, p2], date=date)
-            self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, p2,
-                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+                    date = tr_rows[0].text.replace("\t", "").replace("\n", "")
+                    time = tr_rows[1].text.replace("\t", "").replace("\n", "")
+                    name = tr_rows[4].text.replace("\t", "").replace("\n", "")
+                    p1, p2 = name.split(" v ")
+                    p1 = p1.strip()
+                    p2 = p2.strip()
+                    win = tr_rows[3].text.replace("\t", "").replace("\n", "")
+                    lose = tr_rows[5].text.replace("\t", "").replace("\n", "")
+
+                    event = Event(self.category, self.sub_category, [p1, p2], date=date)
+                    self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                                  "FULLTIME_RESULT_NO_DRAW", "WIN", win, self.bookmaker))
+                    self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                                  "FULLTIME_RESULT_NO_DRAW", "LOSE", lose, self.bookmaker))
+                except IndexError:
+                    pass
+                except ValueError:
+                    pass
 
     def parse_sportingbet(self):
         # Get the rows from the page
@@ -698,7 +739,12 @@ class BettingPage:
 
         # Extract information from page
         banner = self.html_soup.findAll('div', {"id": "content"})[0].findAll('div', {"class": "breadcrumb"})[0]
-        self.sub_category = banner.findAll("strong")[0].text
+        if self.category == "FOOTBALL":
+            self.sub_category = banner.findAll("strong")[0].text
+            outcome_type = "FULLTIME_RESULT"
+        elif self.category == "SNOOKER":
+            self.sub_category = "UK Championships"
+            outcome_type = "FULLTIME_RESULT_NO_DRAW"
 
         for each in self.rows:
             datetime = each.findAll("span", {"class": "StartTime"})[0].text.replace("\t", "").replace("\n", "")
@@ -708,26 +754,35 @@ class BettingPage:
             p2 = p2.strip()
             win = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds home active"})[0].\
                 findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
-            draw = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds draw active"})[0].\
-                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+            try:
+                draw = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds draw active"})[0].\
+                    findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+            except IndexError:
+                draw = None
             lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
                 findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
 
             event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
             self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                          "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                                                          outcome_type, "WIN", win, self.bookmaker))
             self.bettable_outcomes.append(BettableOutcome(event, p2,
-                                                          "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                          "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+                                                          outcome_type, "LOSE", lose, self.bookmaker))
+            if draw is not None:
+                self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                              outcome_type, "DRAW", draw, self.bookmaker))
 
     def parse_marathonbet(self):
         # Get the rows from the page
         self.rows = self.html_soup.findAll("table", {"class": "foot-market"})[0].findAll("tbody", recursive=False)[1:]
 
-        # Extract information from page
-        self.sub_category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
-            text.replace("\n","").replace("\t","")
+        if self.category == "FOOTBALL":
+            # Extract information from page
+            self.sub_category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
+                text.replace("\n", "").replace("\t", "")
+            outcome_type = "FULLTIME_RESULT"
+        elif self.category == "SNOOKER":
+            self.sub_category = "UK Championships"
+            outcome_type = "FULLTIME_RESULT_NO_DRAW"
 
         for each in self.rows:
             try:
@@ -743,21 +798,33 @@ class BettingPage:
 
                 all_odds = each.findAll("td", {"class": "height-column-with-price"})
 
-                for odd in all_odds:
-                    if "\"" + p1 + " To Win\"" in odd.attrs['data-sel']:
-                        win = odd.text.replace("\t","").replace("\n","")
-                    if "\"Draw\"" in odd.attrs['data-sel']:
-                        draw = odd.text.replace("\t","").replace("\n","")
-                    if "\"" + p2 + " To Win\"" in odd.attrs['data-sel']:
-                        lose = odd.text.replace("\t","").replace("\n","")
+                if self.category == "FOOTBALL":
+                    for odd in all_odds:
+                        if "\"" + p1 + " To Win\"" in odd.attrs['data-sel']:
+                            win = odd.text.replace("\t", "").replace("\n", "")
+                        if "\"Draw\"" in odd.attrs['data-sel']:
+                            draw = odd.text.replace("\t", "").replace("\n", "")
+                        if "\"" + p2 + " To Win\"" in odd.attrs['data-sel']:
+                            lose = odd.text.replace("\t", "").replace("\n", "")
+                elif self.category == "SNOOKER":
+                    for odd in all_odds:
+                        if p1 + "\",\"mn\":\"Match Winner\"" in odd.attrs['data-sel']:
+                            win = odd.text.replace("\t", "").replace("\n", "")
+                        draw = None
+                        if p2 + "\",\"mn\":\"Match Winner\"" in odd.attrs['data-sel']:
+                            lose = odd.text.replace("\t", "").replace("\n", "")
 
                 event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
                 self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                              "FULLTIME_RESULT", "WIN", win, self.bookmaker))
+                                                              outcome_type, "WIN", win, self.bookmaker))
                 self.bettable_outcomes.append(BettableOutcome(event, p2,
-                                                              "FULLTIME_RESULT", "LOSE", lose, self.bookmaker))
-                self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                              "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
+                                                              outcome_type, "LOSE", lose, self.bookmaker))
+                if draw is not None:
+                    self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                                  outcome_type, "DRAW", draw, self.bookmaker))
+
             except KeyError as err:
                 print("KeyError with MARTAHONBET: " + p1 + " " + p2 + "\n" + format(err))
+            except IndexError as err:
+                print("IndexError with MARATHONBET\n" + format(err))
 

@@ -76,7 +76,8 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
             html_soup = mu.get_page_source(file_path=file_path, url=url, ignore_files=ignore_files,
                                            sleep_time=SLEEP_TIME)
             # Create the class from the soup
-            page = arbitrage.BettingPage(html_soup, bet_provider, "FOOTBALL")
+            category = sub_category.split("_")[0].upper()
+            page = arbitrage.OddsPageParser(html_soup, bet_provider, category)
 
             # Add events to the events list
             if len(page.bettable_outcomes) > 0:

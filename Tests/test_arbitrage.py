@@ -901,9 +901,9 @@ class ArbitrageBetParserFromRealFilesTestCase(unittest.TestCase):
     """Tests for ArbitrageBetParser from real files"""
     def setUp(self):
         self.bettable_outcome_list = []
-        self.paddy = arbitrage.BettingPage(mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+        self.paddy = arbitrage.OddsPageParser(mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                            "Paddy_Football_L2.txt")), "PADDYPOWER", "FOOTBALL")
-        self.eee = arbitrage.BettingPage(mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+        self.eee = arbitrage.OddsPageParser(mwutils.get_page_source_file(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                          "888_Football_L2.txt")), "EIGHT88", "FOOTBALL")
 
         self.bettable_outcome_list += self.paddy.bettable_outcomes

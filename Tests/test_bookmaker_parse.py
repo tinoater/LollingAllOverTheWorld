@@ -8,7 +8,7 @@ import arbitrage
 # Eight88FootballMatchPage class tests
 # ------------------------------------
 class Eight88FootballMatchPageTestCase(unittest.TestCase):
-    """Tests for Eight88FootballMatchPage class in arbitrage.py."""
+    """Tests for Eight88FootballMatchPage"""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "EIGHT88")
@@ -45,10 +45,49 @@ class Eight88FootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("888_Football_L2.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "EIGHT88", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "EIGHT88", "FOOTBALL")
 
         self.html_soup_pl = mwutils.get_page_source_file("888_Football_PL.txt")
-        self.page_pl = arbitrage.BettingPage(self.html_soup_pl, "EIGHT88", "FOOTBALL")
+        self.page_pl = arbitrage.OddsPageParser(self.html_soup_pl, "EIGHT88", "FOOTBALL")
+
+
+class Eight88SnookerPageTestCase(unittest.TestCase):
+    """Tests for Eight88SnookerPage"""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "EIGHT88")
+        self.assertEqual(self.page.category, "SNOOKER")
+        self.assertEqual(self.page.sub_category, "UK Championship")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.bettable_outcomes), 64)
+
+    def test_betting_event_correct_first(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[0].participant, arbitrage.Participant("SNOOKER", "BRECEL, LUCA"))
+        self.assertEqual(self.page.bettable_outcomes[1].participant,
+                         arbitrage.Participant("SNOOKER", "CRAIGIE, SAM"))
+        self.assertEqual(win_odds, 1.33)
+        self.assertEqual(lose_odds, 3.30)
+
+    def test_betting_event_correct_last(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[-2].participant,
+                         arbitrage.Participant("SNOOKER", "ZHANG ANDA"))
+        self.assertEqual(self.page.bettable_outcomes[-1].participant, arbitrage.Participant("SNOOKER", "MCGILL, ANTHONY"))
+        self.assertEqual(win_odds, 2.65)
+        self.assertEqual(lose_odds, 1.46)
+
+    def test_betting_event_correct_date_time(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "26/11")
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("888_Snooker_UKChamps.txt")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "EIGHT88", "SNOOKER")
 
 
 # ------------------------------------
@@ -89,12 +128,43 @@ class PaddyPowerFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("Paddy_Football_L2.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "PADDYPOWER", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "PADDYPOWER", "FOOTBALL")
 
 
-# ------------------------------------
-# PaddyPowerFootballMatchPage class tests
-# ------------------------------------
+class PaddyPowerSnookerPageTestCase(unittest.TestCase):
+    """Tests for PaddyPowerSnookerPage"""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "PADDYPOWER")
+        self.assertEqual(self.page.category, "SNOOKER")
+        self.assertEqual(self.page.sub_category, "UK Championship")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.bettable_outcomes), 64)
+
+    def test_betting_event_correct_first(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[0].participant, arbitrage.Participant("SNOOKER", "JOHN HIGGINS"))
+        self.assertEqual(self.page.bettable_outcomes[1].participant, arbitrage.Participant("SNOOKER", "NOPPON SAENGKHAM"))
+        self.assertEqual(win_odds, 1.083)
+        self.assertEqual(lose_odds, 7.5)
+
+    def test_betting_event_correct_last(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[-3].participant, arbitrage.Participant("SNOOKER", "JIMMY ROBERTSON"))
+        self.assertEqual(self.page.bettable_outcomes[-2].participant, arbitrage.Participant("SNOOKER", "MARK DAVIS"))
+        self.assertEqual(win_odds, 2.2)
+        self.assertEqual(lose_odds, 1.67)
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("Paddy_Snooker_UKChamps.txt")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "PADDYPOWER", "SNOOKER")
+
+
 class PinnacleFootballMatchPageTestCase(unittest.TestCase):
     """Tests for PinnacleFootballMatchPage class in arbitrage.py."""
 
@@ -130,7 +200,7 @@ class PinnacleFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("Pinnacle_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "PINNACLE", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "PINNACLE", "FOOTBALL")
 
 
 # ------------------------------------
@@ -174,7 +244,46 @@ class WilliamHillFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("WilliamHill_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "WILLIAMHILL", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "WILLIAMHILL", "FOOTBALL")
+
+
+class WilliamHillSnookerPageTestCase(unittest.TestCase):
+    """Tests for WilliamHillSnookerPage"""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "WILLIAMHILL")
+        self.assertEqual(self.page.category, "SNOOKER")
+        self.assertEqual(self.page.sub_category, "UK Championship")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.bettable_outcomes), 64)
+
+    def test_betting_event_correct_first(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[0].participant,
+                         arbitrage.Participant("SNOOKER", "JOHN HIGGINS"))
+        self.assertEqual(self.page.bettable_outcomes[1].participant, arbitrage.Participant("SNOOKER", "NOPPON SAENGKHAM"))
+        self.assertEqual(win_odds, 1.08333)
+        self.assertEqual(lose_odds, 7.5)
+
+    def test_betting_event_correct_last(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[-2].participant,
+                         arbitrage.Participant("SNOOKER", "XIAO GUODONG"))
+        self.assertEqual(self.page.bettable_outcomes[-1].participant, arbitrage.Participant("SNOOKER", "JOE PERRY"))
+        self.assertEqual(win_odds, 2.9)
+        self.assertEqual(lose_odds, 1.4)
+
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "26 Nov")
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("WilliamHill_Snooker.txt")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "WILLIAMHILL", "SNOOKER")
 
 
 # ------------------------------------
@@ -218,7 +327,46 @@ class SportingBetFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("SportingBet_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "SPORTINGBET", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "SPORTINGBET", "FOOTBALL")
+
+
+class SportingBetSnookerPageTestCase(unittest.TestCase):
+    """Tests for SportingBetSnookerPage"""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "SPORTINGBET")
+        self.assertEqual(self.page.category, "SNOOKER")
+        self.assertEqual(self.page.sub_category, "UK Championships")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.bettable_outcomes), 64)
+
+    def test_betting_event_correct_first(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[0].participant,
+                         arbitrage.Participant("SNOOKER", "DANIEL WELLS"))
+        self.assertEqual(self.page.bettable_outcomes[1].participant, arbitrage.Participant("SNOOKER", "MARK SELBY"))
+        self.assertEqual(win_odds, 7)
+        self.assertEqual(lose_odds, 1.1)
+
+    def test_betting_event_correct_last(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[-2].participant,
+                         arbitrage.Participant("SNOOKER", "RORY MCLEOD"))
+        self.assertEqual(self.page.bettable_outcomes[-1].participant, arbitrage.Participant("SNOOKER", "MARCO FU"))
+        self.assertEqual(win_odds, 5.5)
+        self.assertEqual(lose_odds, 1.142)
+
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "26/11/2016 13:00 GMT")
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("SportingBet_Snooker.txt")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "SPORTINGBET", "SNOOKER")
 
 
 # ------------------------------------
@@ -262,4 +410,41 @@ class MarathonBetFootballMatchPageTestCase(unittest.TestCase):
 
     def setUp(self):
         self.html_soup = mwutils.get_page_source_file("MarathonBet_Football_PL.txt")
-        self.page = arbitrage.BettingPage(self.html_soup, "MARATHONBET", "FOOTBALL")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "MARATHONBET", "FOOTBALL")
+
+
+class MarathonBetSnookerPageTestCase(unittest.TestCase):
+    """Tests for MarathonBetSnookerPage"""
+
+    def test_constants(self):
+        self.assertEqual(self.page.bookmaker, "MARATHONBET")
+        self.assertEqual(self.page.category, "SNOOKER")
+        self.assertEqual(self.page.sub_category, "UK Championships")
+
+    def test_all_betting_events_found(self):
+        self.assertEqual(len(self.page.bettable_outcomes), 64)
+
+    def test_betting_event_correct_first(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[0:2] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[0].participant, arbitrage.Participant("SNOOKER", "BRECEL, LUCA"))
+        self.assertEqual(self.page.bettable_outcomes[1].participant, arbitrage.Participant("SNOOKER", "CRAIGIE, SAM"))
+        self.assertEqual(win_odds, 1.4)
+        self.assertEqual(lose_odds, 3.22)
+
+    def test_betting_event_correct_last(self):
+        win_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "WIN"][0]
+        lose_odds = [x.odds.odds for x in self.page.bettable_outcomes[-2:] if x.outcome == "LOSE"][0]
+
+        self.assertEqual(self.page.bettable_outcomes[-2].participant, arbitrage.Participant("SNOOKER", "WALDEN, RICKY"))
+        self.assertEqual(self.page.bettable_outcomes[-1].participant, arbitrage.Participant("SNOOKER", "DONALDSON, SCOTT"))
+        self.assertEqual(win_odds, 1.34)
+        self.assertEqual(lose_odds, 3.58)
+
+    def test_betting_event_correct_date(self):
+        self.assertEqual(self.page.bettable_outcomes[0].event.date, "26 Nov 13:00")
+
+    def setUp(self):
+        self.html_soup = mwutils.get_page_source_file("MarathonBet_Snooker.txt")
+        self.page = arbitrage.OddsPageParser(self.html_soup, "MARATHONBET", "SNOOKER")
