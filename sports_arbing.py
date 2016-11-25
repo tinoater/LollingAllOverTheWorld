@@ -20,7 +20,7 @@ def download_html_soup_to_file(sub_category, bet_provider, date):
     bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
     try:
         url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
-    except KeyError:
+    except IndexError:
         # No link found - this booky doesn't do these odds
         return
 
@@ -49,7 +49,13 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     for sub_category in category_list:
         # For each sub_category and each bookmaker add inputs to the list
         for bet_provider in BOOKMAKERS_LIST:
-            download_input_list.append((sub_category, bet_provider, date))
+            try:
+                t = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
+                download_input_list.append((sub_category, bet_provider, date))
+            except IndexError:
+                continue
+            except KeyError:
+                continue
 
     # Run the jobs in parallel
     _ = Parallel(n_jobs=NUM_CORES)(delayed(download_html_soup_to_file)(i, j, k) for (i, j, k) in download_input_list)
@@ -66,8 +72,10 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
             bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
             try:
                 url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
-            except KeyError:
+            except IndexError:
                 # No link found - this booky doesn't do these odds
+                continue
+            except KeyError:
                 continue
 
             file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
@@ -116,9 +124,9 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
 
 def adding_a_new_bookmaker():
     # Get an example page source of theirs and save it in the tests folder
-    # mu.get_page_source_url("https://www.marathonbet.co.uk/en/popular/Football/England/Premier+League/?menu=21520",
-    #                        WEBDRIVER_PATH,
-    #                        out_file_path="/home/bobby/Documents/Arbing/MarathonBet_Football_PL.txt")
+    mu.get_page_source_url("https://sports.ladbrokes.com/en-gb/betting/football/english/premier-league/",
+                           WEBDRIVER_PATH,
+                           out_file_path="F:\Coding\PycharmProjects\LollingAllOverTheWorld\Tests\LadBrokes_Football_PL.txt")
 
     # Create a new test for them to read the data from the file
     # This follows exactly the form of the other ones
@@ -141,4 +149,4 @@ if __name__ == "__main__":
 
     #debug()
 
-    #adding_a_new_bookmaker()
+    # adding_a_new_bookmaker()

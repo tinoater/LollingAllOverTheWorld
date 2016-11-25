@@ -17,7 +17,8 @@ BOOKMAKERS_LIST = {"EIGHT88": 0,
                    #"PINNACLE": 2,
                    "WILLIAMHILL": 3,
                    "SPORTINGBET": 4,
-                   "MARATHONBET": 5
+                   "MARATHONBET": 5,
+                   "LADBROKES": 6
                    }
 
 CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
@@ -83,6 +84,13 @@ MARATHONBET_DICT = {"Bookmaker": "MarathonBet",
                     "Snooker_UKChamps": "https://www.marathonbet.co.uk/en/betting/Snooker/UK+Championship/?menu=95572"
                     }
 
+LADBROKES_DICT = {"Bookmaker": "Ladbrokes",
+                  "Football_PL": "https://sports.ladbrokes.com/en-gb/betting/football/english/premier-league/",
+                  "Football_C": "https://sports.ladbrokes.com/en-gb/betting/football/english/championship/",
+                  "Football_L1": "https://sports.ladbrokes.com/en-gb/betting/football/english/league-one/",
+                  "Football_L2": "https://sports.ladbrokes.com/en-gb/betting/football/english/league-two/"
+                 }
+
 FOOTBALL_DICT = {"ARSENAL": 1,
                  "BOURNEMOUTH": 2,
                  "BOURNEMOUTH AFC": 2,
@@ -98,8 +106,10 @@ FOOTBALL_DICT = {"ARSENAL": 1,
                  "MANCHESTER CITY": 10,
                  "MAN CITY": 10,
                  "MANCHESTER UNITED": 11,
+                 "MANCHESTER UTD": 11,
                  "MAN UTD": 11,
                  "MIDDLESBROUGH": 12,
+                 "MIDDLESBOROUGH": 12,
                  "SOUTHAMPTON": 13,
                  "STOKE CITY": 14,
                  "STOKE": 14,
@@ -516,6 +526,7 @@ SUBCATEGORY_DICT["FOOTBALL"] = {"PREMIER LEAGUE": 1,
                                 "ENGLAND. PREMIER LEAGUE": 1,
                                 "THE CHAMPIONSHIP": 2,
                                 "ENGLISH CHAMPIONSHIP": 2,
+                                "CHAMPIONSHIP": 2,
                                 "ENGLAND - CHAMPIONSHIP": 2,
                                 "ENGLAND. CHAMPIONSHIP": 2,
                                 "ENGLAND. LEAGUE 1": 3,
@@ -548,5 +559,6 @@ BOOKMAKERS = [EIGHT88_DICT,
               PINNACLE_DICT,
               WILLIAMHILL_DICT,
               SPORTINGBET_DICT,
-              MARATHONBET_DICT
+              MARATHONBET_DICT,
+              LADBROKES_DICT
               ]

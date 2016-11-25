@@ -529,6 +529,8 @@ class OddsPageParser:
             self.parse_sportingbet()
         elif bookmaker == "MARATHONBET":
             self.parse_marathonbet()
+        elif bookmaker == "LADBROKES":
+            self.parse_ladbrokes()
 
     def parse_pinnacle(self):
         # Note that some of these are empty
@@ -828,3 +830,34 @@ class OddsPageParser:
             except IndexError as err:
                 print("IndexError with MARATHONBET\n" + format(err))
 
+    def parse_ladbrokes(self):
+        # Get the rows from the page
+        self.rows = self.html_soup.findAll("div", {"class": "event-list pre"})
+
+        if self.category == "FOOTBALL":
+            # Extract information from page
+            self.sub_category = self.html_soup.findAll("h1")[1].text
+            outcome_type = "FULLTIME_RESULT"
+
+        for each in self.rows:
+            names = each.findAll("div", {"class": "name"})
+            name = names[0].text
+
+            p1, p2 = name.split(" v ")
+            p1 = p1.strip()
+            p2 = p2.strip()
+
+            all_odds = each.findAll("div", {"class": "selection"})
+
+            if self.category == "FOOTBALL":
+                win = all_odds[0].findAll("div")[0].text.strip()
+                draw = all_odds[1].findAll("div")[0].text.strip()
+                lose = all_odds[2].findAll("div")[0].text.strip()
+
+            event = Event(self.category, self.sub_category, [p1, p2])
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          outcome_type, "WIN", win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                          outcome_type, "LOSE", lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                          outcome_type, "DRAW", draw, self.bookmaker))
