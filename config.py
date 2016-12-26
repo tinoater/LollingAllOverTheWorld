@@ -21,8 +21,15 @@ BOOKMAKERS_LIST = {"EIGHT88": 0,
                    "LADBROKES": 6
                    }
 
-CATEGORY_LIST = ["Football_PL", "Football_C", "Football_L1", "Football_L2", "Football_CL", "Football_LaLig",
-                 "Football_GeBun", "Snooker_UKChamps"]
+CATEGORY_LIST = ["Football_PL",
+                 "Football_C",
+                 "Football_L1",
+                 "Football_L2",
+                 #"Football_CL",
+                 "Football_LaLig",
+                 "Football_GeBun"
+                 #"Snooker_UKChamps"
+                 ]
 
 EIGHT88_DICT = {"Bookmaker": "888",
                 "Football_L2": "https://www.888sport.com/bet/#/filter/football/england/league_two",
@@ -421,6 +428,7 @@ SNOOKER_DICT = {"BRECEL, LUCA": 1,
                 "HIGGINSON, ANDREW": 41,
                 "MANN, MITCHELL": 42,
                 "DELU, YU": 43,
+                "YU DELU": 43,
                 "WILLIAMS, ROBBIE": 44,
                 "O'BRIEN, FERGAL": 45,
                 "FERGAL O BRIEN": 45,

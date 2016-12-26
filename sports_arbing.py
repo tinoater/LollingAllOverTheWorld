@@ -7,13 +7,7 @@ import multiprocessing
 
 NUM_CORES = multiprocessing.cpu_count()
 
-
-# TODO: Add in more bookies
-
-# TODO: Add in more football leagues
-# TODO: Add in football odds for other types - win and draw etc
-# TODO: Add in odds for tennis
-
+# TODO: Add in football odds for other types - win + draw, total goals scored etc
 
 def download_html_soup_to_file(sub_category, bet_provider, date):
     """Download html_soup for a sub_category and bet_provider"""
@@ -140,8 +134,10 @@ def adding_a_new_bookmaker():
 
 
 def debug():
-    adding_a_new_bookmaker()
-
+    #adding_a_new_bookmaker()
+    html_soup = mu.get_page_source_file("F:\\Coding\\PycharmProjects\\LollingAllOverTheWorld\\ScrapedFiles\\MarathonBet\\2016_12_26_09\\Football_PL.txt")
+    t = arbitrage.OddsPageParser(html_soup, "MARATHONBET", "FOOTBALL")
+    print(t)
 
 if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d_%H")
