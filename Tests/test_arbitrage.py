@@ -672,6 +672,13 @@ class ArbitrageBetTestCase(unittest.TestCase):
 
     def test_set_betting_amounts_integer_round(self):
         # TODO: Betting amount integer rounding test
+        """Does the arbitrageBet integer rounding work correctly?"""
+        arb_bet = arbitrage.ArbitrageBet([self.bo_bourn, self.bo_arse, self.bo_draw], total_investment=1990)
+
+        self.assertEqual(arb_bet.arb_perc, 96.59)
+        self.assertEqual(arb_bet.profit, 70.27)
+        self.assertEqual(arb_bet.return_perc, 3.53)
+        self.assertAlmostEqual(arb_bet.total_investment, 1990, places=1)
         pass
 
     def setUp(self):
@@ -746,10 +753,6 @@ class ArbitrageBetShortHandTestCase(unittest.TestCase):
         self.assertEqual(arb_bet.profit, 70.27)
         self.assertEqual(arb_bet.return_perc, 3.53)
         self.assertAlmostEqual(arb_bet.total_investment, 1990, places=1)
-
-    def test_set_betting_amounts_integer_round(self):
-        # TODO: Betting amount integer rounding test
-        pass
 
     def setUp(self):
         self.event_bourn_arsenal = arbitrage.Event("FOOTBALL", "PREMIER LEAGUE",
