@@ -1,6 +1,7 @@
 import warnings
 import copy
 from config import *
+import time
 
 
 class Odds:
@@ -12,7 +13,7 @@ class Odds:
         self.odds_arb = 1/self.odds
 
     def __str__(self):
-        output = str(self.odds) + " (" + str(self.odds_arb)
+        output = str(self.odds) + " (" + str(self.odds_arb) + ")"
 
         return output
 
@@ -148,8 +149,8 @@ class Event:
 
         try:
             self.sub_category_id = SUBCATEGORY_DICT[self.category][self.sub_category]
-        except IndexError:
-            raise IndexError("Subcategory " + self.sub_category + " not in SUBCATEGORY_DICT")
+        except KeyError:
+            raise KeyError("Subcategory " + self.sub_category + " not in SUBCATEGORY_DICT")
 
     def __str__(self):
         output = ""
@@ -224,7 +225,10 @@ class BettableOutcome:
             raise ValueError("Participant not in the Event")
 
     def __str__(self):
-        outcome = self.bookmaker + "-" + self.participant.name + "-" + self.outcome_type + ":" + self.odds
+        outcome = self.bookmaker + "-" + \
+                  str(self.event) + "-" + \
+                  self.participant.participant + \
+                  "-" + self.outcome_type + ":" + str(self.odds)
 
         return outcome
 
@@ -311,7 +315,7 @@ class ArbitrageBet:
     """
     Combination of BettableOutcomes to try to form an arbitrage
     """
-    def __init__(self, bettable_outcomes, total_investment=100):
+    def __init__(self, bettable_outcomes, total_investment=100, integer_round=False):
         self.bettable_outcomes = copy.deepcopy(bettable_outcomes)
 
         # First check that all bets are for the same event
@@ -353,7 +357,7 @@ class ArbitrageBet:
             self.bets.append(Bet(bo, 0))
 
         # Scale them to the desired cost
-        self.set_arb_betting_amounts(total_investment)
+        self.set_arb_betting_amounts(total_investment, integer_round=integer_round)
         self.total_investment = sum([x.bet_amount for x in self.bets])
 
         # Set the profit values
@@ -372,7 +376,7 @@ class ArbitrageBet:
 
         return output
 
-    def set_arb_betting_amounts(self, total_investment, integer_round=True):
+    def set_arb_betting_amounts(self, total_investment, integer_round):
         """
         Calculate required betting amounts for arb
         :param total_investment:
@@ -501,11 +505,11 @@ class OddsPageParser:
     """
     Parses html_soup into list of BettableOutcomes
     """
-    def __init__(self, url_soup, bookmaker, category):
+    def __init__(self, html_soup, bookmaker, category):
         self.bookmaker = bookmaker
         self.category = category
         self.sub_category = None
-        self.html_soup = url_soup
+        self.html_soup = html_soup
         self.bettable_outcomes = []
 
         if bookmaker == "PINNACLE":
@@ -531,6 +535,12 @@ class OddsPageParser:
             self.parse_marathonbet()
         elif bookmaker == "LADBROKES":
             self.parse_ladbrokes()
+
+    def __str__(self):
+        output = ""
+        for outcome in self.bettable_outcomes:
+            output += str(outcome) + "\n"
+        return output
 
     def parse_pinnacle(self):
         # Note that some of these are empty
@@ -749,47 +759,64 @@ class OddsPageParser:
             outcome_type = "FULLTIME_RESULT_NO_DRAW"
 
         for each in self.rows:
-            datetime = each.findAll("span", {"class": "StartTime"})[0].text.replace("\t", "").replace("\n", "")
-            name = each.findAll("div", {"class": "eventName"})[0].text.replace("\t", "").replace("\n", "")
-            p1, p2 = name.split(" v ")
-            p1 = p1.strip()
-            p2 = p2.strip()
-            win = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds home active"})[0].\
-                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
             try:
-                draw = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds draw active"})[0].\
+                datetime = each.findAll("span", {"class": "StartTime"})[0].text.replace("\t", "").replace("\n", "")
+                name = each.findAll("div", {"class": "eventName"})[0].text.replace("\t", "").replace("\n", "")
+                p1, p2 = name.split(" v ")
+                p1 = p1.strip()
+                p2 = p2.strip()
+                win = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds home active"})[0].\
                     findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
-            except IndexError:
-                draw = None
-            lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
-                findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+                try:
+                    draw = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds draw active"})[0].\
+                        findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
+                except IndexError:
+                    draw = None
+                lose = each.findAll("div", {"class": "market"})[0].findAll("div", {"class": "odds away active"})[0].\
+                    findAll("div", {"id": "isOffered"})[0].findAll("span", {"class": "priceText wide EU"})[0].text
 
-            event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
-            self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                          outcome_type, "WIN", win, self.bookmaker))
-            self.bettable_outcomes.append(BettableOutcome(event, p2,
-                                                          outcome_type, "LOSE", lose, self.bookmaker))
-            if draw is not None:
+                event = Event(self.category, self.sub_category, [p1, p2], date=datetime)
                 self.bettable_outcomes.append(BettableOutcome(event, p1,
-                                                              outcome_type, "DRAW", draw, self.bookmaker))
+                                                              outcome_type, "WIN", win, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, p2,
+                                                              outcome_type, "LOSE", lose, self.bookmaker))
+                if draw is not None:
+                    self.bettable_outcomes.append(BettableOutcome(event, p1,
+                                                                  outcome_type, "DRAW", draw, self.bookmaker))
+            except IndexError:
+                warnings.warn("SportingBet row parse fail")
 
     def parse_marathonbet(self):
         # Get the rows from the page
         self.rows = self.html_soup.findAll("table", {"class": "foot-market"})[0].findAll("tbody", recursive=False)[1:]
 
-        if self.category == "FOOTBALL":
-            # Extract information from page
-            self.sub_category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
-                text.replace("\n", "").replace("\t", "")
-            outcome_type = "FULLTIME_RESULT"
-        elif self.category == "SNOOKER":
-            self.sub_category = "UK Championships"
-            outcome_type = "FULLTIME_RESULT_NO_DRAW"
+        try:
+            if self.category == "FOOTBALL":
+                # Extract information from page
+                self.sub_category = self.html_soup.findAll("h1", {"class": "category-label"})[0].\
+                    text.replace("\n", "").replace("\t", "")
+                outcome_type = "FULLTIME_RESULT"
+            elif self.category == "SNOOKER":
+                self.sub_category = "UK Championships"
+                outcome_type = "FULLTIME_RESULT_NO_DRAW"
+        except IndexError:
+            warnings.warn("Sub Class not found - probably no odds for this")
+            return
 
         for each in self.rows:
             try:
+                # Sometimes the datetime uses a class of 'date ' which I think means the next year
                 datetime = each.findAll("td", {"class": "date"})[0].text.replace("\t", "").replace("\n", "").strip()
                 names = each.findAll("div", {"class": "member-name"})
+                # If the match is next year then the class is different too
+                if len(names) == 0:
+                    names = each.findAll("div", {"class": "date-with-year-member-name"})
+                # If the match is today then the class name is different and no date is displayed
+                if len(names) == 0:
+                    names = each.findAll("div", {"class": "today-member-name"})
+                    date = time.strftime("%d %b ")
+                    datetime = date + datetime
+
                 name = names[0].text
                 for player in names[1:]:
                     name += " v " + player.text
@@ -838,6 +865,10 @@ class OddsPageParser:
             # Extract information from page
             self.sub_category = self.html_soup.findAll("h1")[1].text
             outcome_type = "FULLTIME_RESULT"
+
+        if self.sub_category == "ENGLISH":
+            # Probably no odds for this sub category
+            return
 
         for each in self.rows:
             names = each.findAll("div", {"class": "name"})
