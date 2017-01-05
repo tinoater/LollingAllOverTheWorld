@@ -606,11 +606,11 @@ class OddsPageParser:
             self.sub_category = identifier[-1].text
 
         date_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--date"})
-        if len(date_list) != 1:
-            warnings.warn("Incorrect length of date list on row. 1 != " + str(len(date_list)))
-            date = None
-        else:
+        try:
             date = date_list[0].text
+        except IndexError:
+            # If no date shown then match is currently playing
+            date = time.strftime("%Y_%m_%d")
 
         players = each.findAll('div', {"class": "KambiBC-event-participants__name"})
         if len(players) != 2:
@@ -654,10 +654,10 @@ class OddsPageParser:
 
             for each in self.rows:
                 time_list = each.findAll('div', {"class": "fb_event_time"})
-                if len(time_list) != 1:
-                    warnings.warn("Incorrect length of time list on row. 1 != " + str(len(time_list)))
-                else:
+                try:
                     time = time_list[0].text
+                except IndexError:
+                    time = ""
 
                 name_list = each.findAll('div', {"class": "fb_event_name"})
                 if len(name_list) != 1:
