@@ -64,12 +64,15 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
         category_bettable_outcomes = []
         for bet_provider in BOOKMAKERS_LIST:
             bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
+            print("   ", bookmaker, end=": ")
             try:
                 url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
             except IndexError:
                 # No link found - this booky doesn't do these odds
+                print("IndexError")
                 continue
             except KeyError:
+                print("KeyError")
                 continue
 
             file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
@@ -85,6 +88,8 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
             if len(page.bettable_outcomes) > 0:
                 category_bettable_outcomes += page.bettable_outcomes
 
+            print(str(len(page.bettable_outcomes)))
+
         # Create the arbs for these events
         category_arbitrage_bets = arbitrage.ArbitrageBetParser(category_bettable_outcomes)
 
@@ -96,7 +101,6 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
 
         # Output the category_arbitrage_bets to a file
         category_arbitrage_bets.get_full_output(to_screen=False, out_file_path=os.path.join(RESULTS_PATH, filename))
-        print(sub_category + " done")
 
     # Output summary information to file
     if not os.path.exists(os.path.dirname(SUMMARY_RESULTS_PATH)):
@@ -114,6 +118,11 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
         out_file.write("\n------------\n")
 
     out_file.close()
+
+    print("Arbs found: " + str(len(all_arbs)) + "\n")
+    for each in all_arbs:
+        print(str(each))
+        print("--------------")
 
 
 def adding_a_new_bookmaker():
@@ -135,8 +144,8 @@ def adding_a_new_bookmaker():
 
 def debug():
     #adding_a_new_bookmaker()
-    html_soup = mu.get_page_source_file("F:\\Coding\\PycharmProjects\\LollingAllOverTheWorld\\ScrapedFiles\\MarathonBet\\2016_12_26_09\\Football_PL.txt")
-    t = arbitrage.OddsPageParser(html_soup, "MARATHONBET", "FOOTBALL")
+    html_soup = mu.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles\PaddyPower\\2017_01_05_20\\Football_L2.txt")
+    t = arbitrage.OddsPageParser(html_soup, "PADDYPOWER", "FOOTBALL")
     print(t)
 
 if __name__ == "__main__":
