@@ -10,6 +10,8 @@ ARBITRAGE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Scra
 RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Results\\")
 SUMMARY_RESULTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "SummaryResults\\")
 
+# TODO: This needs to be fixed in the mwutils package
+SELENIUM_IMPLICIT_WAIT = 10
 SLEEP_TIME = 3
 
 BOOKMAKERS_LIST = {"EIGHT88": 0,
