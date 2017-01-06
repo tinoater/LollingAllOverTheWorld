@@ -64,6 +64,7 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
         category_bettable_outcomes = []
         for bet_provider in BOOKMAKERS_LIST:
             bookmaker = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["Bookmaker"]
+            class_to_poll = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]]["class_to_poll"]
             print("   ", bookmaker, end=": ")
             try:
                 url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
@@ -79,7 +80,7 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
 
             # Get the soup from file (if it exists) or get it from the website
             html_soup = mu.get_page_source(file_path=file_path, url=url, ignore_files=ignore_files,
-                                           sleep_time=SLEEP_TIME)
+                                           sleep_time=SLEEP_TIME, class_to_poll=class_to_poll)
             # Create the class from the soup
             category = sub_category.split("_")[0].upper()
             page = arbitrage.OddsPageParser(html_soup, bet_provider, category)

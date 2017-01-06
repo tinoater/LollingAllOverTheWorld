@@ -32,6 +32,7 @@ CATEGORY_LIST = ["Football_PL",
                  ]
 
 EIGHT88_DICT = {"Bookmaker": "888",
+                "class_to_poll": "KambiBC-event-participants__name",
                 "Football_L2": "https://www.888sport.com/bet/#/filter/football/england/league_two",
                 "Football_L1": "https://www.888sport.com/bet/#/filter/football/england/league_one",
                 "Football_C": "https://www.888sport.com/bet/#/filter/football/england/the_championship",
@@ -43,6 +44,7 @@ EIGHT88_DICT = {"Bookmaker": "888",
                 }
 
 PADDY_DICT = {"Bookmaker": "PaddyPower",
+              "class_to_poll": "pp_fb_event",
               "Football_L2": "http://www.paddypower.com/football/football-matches/english-league-2",
               "Football_L1": "http://www.paddypower.com/football/football-matches/english-league-1",
               "Football_PL": "http://www.paddypower.com/football/football-matches/premier-league",
@@ -53,6 +55,7 @@ PADDY_DICT = {"Bookmaker": "PaddyPower",
               }
 
 PINNACLE_DICT = {"Bookmaker": "Pinnacle",
+                 "class_to_poll": "",
                  "Football_PL": "https://www.pinnacle.com/en/odds/match/soccer/england/england-premier-league?sport=True",
                  "Football_C": "https://www.pinnacle.com/en/odds/match/soccer/england/england-championship",
                  "Football_L1": "https://www.pinnacle.com/en/odds/match/soccer/england/england-league-1",
@@ -60,6 +63,7 @@ PINNACLE_DICT = {"Bookmaker": "Pinnacle",
                  }
 
 WILLIAMHILL_DICT = {"Bookmaker": "WilliamHill",
+                    "class_to_poll": "rowOdd",
                     "Football_PL": "http://sports.williamhill.com/bet/en-gb/betting/t/295/English+Premier+League.html",
                     "Football_C": "http://sports.williamhill.com/bet/en-gb/betting/t/292/English+Championship.html",
                     "Football_L1": "http://sports.williamhill.com/bet/en-gb/betting/t/293/English+League+1.html",
@@ -70,6 +74,7 @@ WILLIAMHILL_DICT = {"Bookmaker": "WilliamHill",
                    }
 
 SPORTINGBET_DICT = {"Bookmaker": "SportingBet",
+                    "class_to_poll": "event active",
                     "Football_PL": "http://www.sportingbet.com/sports-football/england-premier-league/1-102-386195.html",
                     "Football_C": "http://www.sportingbet.com/sports-football/england-championship/1-102-851891.html",
                     "Football_L1": "http://www.sportingbet.com/sports-football/england-league-one/1-102-851967.html",
@@ -81,6 +86,7 @@ SPORTINGBET_DICT = {"Bookmaker": "SportingBet",
                    }
 
 MARATHONBET_DICT = {"Bookmaker": "MarathonBet",
+                    "class_to_poll": "foot-market",
                     "Football_PL": "https://www.marathonbet.co.uk/en/popular/Football/England/Premier+League/?menu=21520",
                     "Football_C": "https://www.marathonbet.co.uk/en/popular/Football/England/Championship/?menu=22807",
                     "Football_L1": "https://www.marathonbet.co.uk/en/popular/Football/England/League+1/?menu=22808",
@@ -92,6 +98,7 @@ MARATHONBET_DICT = {"Bookmaker": "MarathonBet",
                     }
 
 LADBROKES_DICT = {"Bookmaker": "Ladbrokes",
+                  "class_to_poll": "event-list pre",
                   "Football_PL": "https://sports.ladbrokes.com/en-gb/betting/football/english/premier-league/",
                   "Football_C": "https://sports.ladbrokes.com/en-gb/betting/football/english/championship/",
                   "Football_L1": "https://sports.ladbrokes.com/en-gb/betting/football/english/league-one/",
