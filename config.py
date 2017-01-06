@@ -100,7 +100,7 @@ MARATHONBET_DICT = {"Bookmaker": "MarathonBet",
                     }
 
 LADBROKES_DICT = {"Bookmaker": "Ladbrokes",
-                  "class_to_poll": "event-list pre",
+                  "class_to_poll": "name",
                   "Football_PL": "https://sports.ladbrokes.com/en-gb/betting/football/english/premier-league/",
                   "Football_C": "https://sports.ladbrokes.com/en-gb/betting/football/english/championship/",
                   "Football_L1": "https://sports.ladbrokes.com/en-gb/betting/football/english/league-one/",

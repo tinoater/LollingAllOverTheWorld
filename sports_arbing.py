@@ -4,6 +4,7 @@ import arbitrage
 from config import *
 from joblib import Parallel, delayed
 import multiprocessing
+import os
 
 NUM_CORES = multiprocessing.cpu_count()
 
@@ -145,8 +146,9 @@ def adding_a_new_bookmaker():
 
 def debug():
     #adding_a_new_bookmaker()
-    html_soup = mu.get_page_source_file("F:\Coding\PycharmProjects\Arbitrage\ScrapedFiles\PaddyPower\\2017_01_05_20\\Football_L2.txt")
-    t = arbitrage.OddsPageParser(html_soup, "PADDYPOWER", "FOOTBALL")
+    html_soup = mu.get_page_source_url("https://www.888sport.com/bet/#/filter/football/england/the_championship",
+                                       WEBDRIVER_PATH, class_to_poll="KambiBC-event-participants__name")
+    t = arbitrage.OddsPageParser(html_soup, "EIGHT88", "FOOTBALL")
     print(t)
 
 if __name__ == "__main__":
