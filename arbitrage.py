@@ -511,24 +511,24 @@ class OddsPageParser:
         self.sub_category = None
         self.html_soup = html_soup
         self.bettable_outcomes = []
+        self.parsing_error = False
+        self.parsing_error_reason = ""
+
+        # If redirected to an outrights page then no odds so exit
+        if self.html_soup.url != self.html_soup.final_url:
+            self.parsing_error = True
+            self.parsing_error_reason = "URL redirect:" + self.html_soup.requested_url + \
+                                        "\n URL landed" + self.html_soup.final_url
+            return
 
         if bookmaker == "PINNACLE":
             self.parse_pinnacle()
         elif bookmaker == "EIGHT88":
-            self.rows = self.html_soup.findAll("div", {"class": "KambiBC-event-item__event-wrapper"})
-            for each in self.rows:
-                try:
-                    self.parse_eight88(each)
-                except ValueError:
-                    pass
+            self.parse_eight88()
         elif bookmaker == "PADDYPOWER":
             self.parse_paddypower()
         elif bookmaker == "WILLIAMHILL":
-            try:
-                self.parse_williamhill()
-            except IndexError:
-                warnings.warn("No odds found")
-                pass
+            self.parse_williamhill()
         elif bookmaker == "SPORTINGBET":
             self.parse_sportingbet()
         elif bookmaker == "MARATHONBET":
@@ -595,53 +595,64 @@ class OddsPageParser:
             self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
                                                           "FULLTIME_RESULT", "DRAW", draw, self.bookmaker))
 
-    def parse_eight88(self, each):
-        if self.sub_category is None:
-            identifier = self.html_soup.findAll("span", {"class": "KambiBC-modularized-event-path__fragment"})
-            identifier = [x for x in identifier if x.text.upper() != self.category]
-            # Remove the spain identifier from the european leagues
-            identifier = [x for x in identifier if x.text.upper() != "SPAIN"
-                          and x.text.upper() != "GERMANY"
-                          and x.text.upper() != "ENGLAND"]
-            self.sub_category = identifier[-1].text
+    def parse_eight88(self):
+        self.rows = self.html_soup.findAll("div", {"class": "KambiBC-event-item__event-wrapper"})
+        for each in self.rows:
+            row_parse_error = False
+            row_parse_error_reason = ""
 
-        date_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--date"})
-        try:
-            date = date_list[0].text
-        except IndexError:
-            # If no date shown then match is currently playing
-            date = time.strftime("%Y_%m_%d")
+            if self.sub_category is None:
+                # If sub_category is not already set then set it here
+                identifier = self.html_soup.findAll("span", {"class": "KambiBC-modularized-event-path__fragment"})
+                identifier = [x for x in identifier if x.text.upper() != self.category]
+                # Remove the spain identifier from the european leagues
+                identifier = [x for x in identifier if x.text.upper() != "SPAIN"
+                              and x.text.upper() != "GERMANY"
+                              and x.text.upper() != "ENGLAND"]
+                self.sub_category = identifier[-1].text
 
-        players = each.findAll('div', {"class": "KambiBC-event-participants__name"})
-        if len(players) != 2:
-            warnings.warn("Incorrect length of players list on row. 2 != " + str(len(players)))
-        else:
-            player_list = [x.text.replace("\n", "").replace("\t", "") for x in players]
+            date_list = each.findAll('span', {"class": "KambiBC-event-item__start-time--date"})
+            try:
+                date = date_list[0].text
+            except IndexError:
+                # If no date shown then match is currently playing
+                date = time.strftime("%Y_%m_%d")
 
-        odds_list = each.findAll('span', {"class": "KambiBC-mod-outcome__odds"})
-        if (self.category == "FOOTBALL" and len(odds_list) < 3) or (self.category == "SNOOKER" and len(odds_list) < 2):
-            warnings.warn("Incorrect length of odds list on row, found " + str(len(odds_list)))
-            warnings.warn(str(each))
-        else:
-            if self.category == "FOOTBALL":
-                win = odds_list[0].text
-                draw = odds_list[1].text
-                lose = odds_list[2].text
-                outcome_type = "FULLTIME_RESULT"
-            elif self.category == "SNOOKER":
-                win = odds_list[0].text
-                lose = odds_list[1].text
-                outcome_type = "FULLTIME_RESULT_NO_DRAW"
+            players = each.findAll('div', {"class": "KambiBC-event-participants__name"})
+            if len(players) != 2:
+                row_parse_error_reason += "Incorrect length of players on row. "
+                row_parse_error = True
+            else:
+                player_list = [x.text.replace("\n", "").replace("\t", "") for x in players]
 
-        event = Event(self.category, self.sub_category, [player_list[0], player_list[1]], date=date)
-        self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                      outcome_type, "WIN", win, self.bookmaker))
-        self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
-                                                      outcome_type, "LOSE", lose, self.bookmaker))
+            odds_list = each.findAll('span', {"class": "KambiBC-mod-outcome__odds"})
+            if (self.category == "FOOTBALL" and len(odds_list) < 3) or (self.category == "SNOOKER" and len(odds_list) < 2):
+                row_parse_error_reason += "Incorrect numbers of odds on row. "
+                row_parse_error = True
+            else:
+                if self.category == "FOOTBALL":
+                    win = odds_list[0].text
+                    draw = odds_list[1].text
+                    lose = odds_list[2].text
+                    outcome_type = "FULLTIME_RESULT"
+                elif self.category == "SNOOKER":
+                    win = odds_list[0].text
+                    lose = odds_list[1].text
+                    outcome_type = "FULLTIME_RESULT_NO_DRAW"
 
-        if self.category == "FOOTBALL":
-            self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
-                                                          outcome_type, "DRAW", draw, self.bookmaker))
+            # If the row was parsed correctly then create the betting objects
+            if not row_parse_error:
+                event = Event(self.category, self.sub_category, [player_list[0], player_list[1]], date=date)
+                self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                              outcome_type, "WIN", win, self.bookmaker))
+                self.bettable_outcomes.append(BettableOutcome(event, player_list[1],
+                                                              outcome_type, "LOSE", lose, self.bookmaker))
+
+                if self.category == "FOOTBALL":
+                    self.bettable_outcomes.append(BettableOutcome(event, player_list[0],
+                                                                  outcome_type, "DRAW", draw, self.bookmaker))
+            else:
+                print(row_parse_error_reason)
 
     def parse_paddypower(self):
         if self.category == "FOOTBALL":
@@ -692,7 +703,11 @@ class OddsPageParser:
 
     def parse_williamhill(self):
         # Get the rows from the page
-        self.rows = self.html_soup.findAll('tbody')[0].findAll('tr', {"class": "rowOdd"})
+        try:
+            self.rows = self.html_soup.findAll('tbody')[0].findAll('tr', {"class": "rowOdd"})
+        except IndexError:
+            # No odds table so exit the evaluation here
+            return
 
         # Extract information from page
         self.sub_category = self.html_soup.findAll('h1')[1].text
@@ -866,7 +881,7 @@ class OddsPageParser:
             self.sub_category = self.html_soup.findAll("h1")[1].text
             outcome_type = "FULLTIME_RESULT"
 
-        if self.sub_category == "ENGLISH":
+        if self.sub_category.upper() == "ENGLISH":
             # Probably no odds for this sub category
             return
 
@@ -892,3 +907,12 @@ class OddsPageParser:
                                                           outcome_type, "LOSE", lose, self.bookmaker))
             self.bettable_outcomes.append(BettableOutcome(event, p1,
                                                           outcome_type, "DRAW", draw, self.bookmaker))
+
+
+# TODO: Create this class and abstract out the row parsing
+class OddsPageOddsRowParser:
+    """
+    Hold
+    """
+    def __init__(self):
+        pass
