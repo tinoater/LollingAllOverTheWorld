@@ -297,8 +297,9 @@ class Bet:
 
     def __str__(self):
         output = self.bettable_outcome.bookmaker + ":" + str(self.bettable_outcome.participant) + "-" + \
-                 self.bettable_outcome.outcome_type + "-" + str(self.bettable_outcome.outcome) + ": " + \
-                 str(self.bet_amount) + "[" + str(self.return_amount) + "]"
+                 self.bettable_outcome.outcome_type + "-" + str(self.bettable_outcome.outcome) + "[" + \
+                 str(round(self.bettable_outcome.odds.odds, 2)) + "] " + \
+                 "Bet: " + str(self.bet_amount) + " Return: " + str(self.return_amount)
 
         return output
 
@@ -673,13 +674,14 @@ class OddsPageOddsRowParser:
             self.parse_row_ladbrokes()
 
         # Now create the bettable outcomes
-        self.event = Event(self.category, self.sub_category, [self.player_list[0], self.player_list[1]], date=self.date)
-        self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[0],
-                                                      "FULLTIME_RESULT", "WIN", self.win, self.bookmaker))
-        self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[1],
-                                                      "FULLTIME_RESULT", "LOSE", self.lose, self.bookmaker))
-        self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[0],
-                                                      "FULLTIME_RESULT", "DRAW", self.draw, self.bookmaker))
+        if not self.row_parse_error:
+            self.event = Event(self.category, self.sub_category, [self.player_list[0], self.player_list[1]], date=self.date)
+            self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[0],
+                                                          "FULLTIME_RESULT", "WIN", self.win, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[1],
+                                                          "FULLTIME_RESULT", "LOSE", self.lose, self.bookmaker))
+            self.bettable_outcomes.append(BettableOutcome(self.event, self.player_list[0],
+                                                          "FULLTIME_RESULT", "DRAW", self.draw, self.bookmaker))
 
     def parse_row_pinnacle(self):
         tr_rows = self.html_row.findAll("tr")
