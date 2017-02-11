@@ -70,11 +70,11 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
             try:
                 url = BOOKMAKERS[BOOKMAKERS_LIST[bet_provider]][sub_category]
             except IndexError:
-                # No link found - this booky doesn't do these odds
                 print("IndexError")
                 continue
             except KeyError:
-                print("KeyError")
+                # No link found - this booky doesn't do these odds
+                print("No URL for this booky")
                 continue
 
             file_path = os.path.join(ARBITRAGE_PATH, bookmaker, date, sub_category + ".txt")
@@ -84,13 +84,20 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
                                            sleep_time=SLEEP_TIME, class_to_poll=class_to_poll)
             # Create the class from the soup
             category = sub_category.split("_")[0].upper()
+
+            # Do the parsing of the page
             page = arbitrage.OddsPageParser(html_soup, bet_provider, category)
 
             # Add events to the events list
             if len(page.bettable_outcomes) > 0:
                 category_bettable_outcomes += page.bettable_outcomes
 
-            print(str(len(page.bettable_outcomes)))
+            # Create the display output string
+            output_string = ""
+            output_string += str(len(page.bettable_outcomes))
+            if len(page.parsing_row_error_reason) != 0:
+                output_string += " (" + str(len(page.parsing_row_error_reason)) + " errors)"
+            print(output_string)
 
         # Create the arbs for these events
         category_arbitrage_bets = arbitrage.ArbitrageBetParser(category_bettable_outcomes)

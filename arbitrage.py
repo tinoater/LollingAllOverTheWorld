@@ -514,6 +514,7 @@ class OddsPageParser:
         self.bettable_outcomes = []
         self.parsing_error = False
         self.parsing_error_reason = ""
+        self.parsing_row_error_reason = []
 
         # If redirected to an outrights page then no odds so exit
         if self.html_soup.url != self.html_soup.final_url:
@@ -549,6 +550,8 @@ class OddsPageParser:
             for each in self.rows:
                 parsed_row = OddsPageOddsRowParser(each, self.bookmaker, self.category, self.sub_category)
                 self.bettable_outcomes += parsed_row.bettable_outcomes
+                if parsed_row.row_parse_error:
+                    self.parsing_row_error_reason.append(parsed_row.row_parse_error_reason)
 
 
     def __str__(self):
