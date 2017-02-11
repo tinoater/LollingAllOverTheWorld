@@ -522,20 +522,27 @@ class OddsPageParser:
                                         "\n URL landed" + self.html_soup.final_url
             return
 
-        if bookmaker == "PINNACLE":
-            self.parse_pinnacle()
-        elif bookmaker == "EIGHT88":
-            self.parse_eight88()
-        elif bookmaker == "PADDYPOWER":
-            self.parse_paddypower()
-        elif bookmaker == "WILLIAMHILL":
-            self.parse_williamhill()
-        elif bookmaker == "SPORTINGBET":
-            self.parse_sportingbet()
-        elif bookmaker == "MARATHONBET":
-            self.parse_marathonbet()
-        elif bookmaker == "LADBROKES":
-            self.parse_ladbrokes()
+        try:
+            if bookmaker == "PINNACLE":
+                self.parse_pinnacle()
+            elif bookmaker == "EIGHT88":
+                self.parse_eight88()
+            elif bookmaker == "PADDYPOWER":
+                self.parse_paddypower()
+            elif bookmaker == "WILLIAMHILL":
+                self.parse_williamhill()
+            elif bookmaker == "SPORTINGBET":
+                self.parse_sportingbet()
+            elif bookmaker == "MARATHONBET":
+                self.parse_marathonbet()
+            elif bookmaker == "LADBROKES":
+                self.parse_ladbrokes()
+        except IndexError:
+            self.parsing_error = True
+            self.parsing_error_reason = "IndexError"
+        except KeyError:
+            self.parsing_error = True
+            self.parsing_error_reason = "KeyError"
 
         # Now parse the individual odds rows
         if not self.parsing_error:
@@ -658,20 +665,27 @@ class OddsPageOddsRowParser:
         self.row_parse_error = False
         self.row_parse_error_reason = ""
 
-        if bookmaker == "PINNACLE":
-            self.parse_row_pinnacle()
-        elif bookmaker == "EIGHT88":
-            self.parse_row_eight88()
-        elif bookmaker == "PADDYPOWER":
-            self.parse_row_paddypower()
-        elif bookmaker == "WILLIAMHILL":
-            self.parse_row_williamhill()
-        elif bookmaker == "SPORTINGBET":
-            self.parse_row_sportingbet()
-        elif bookmaker == "MARATHONBET":
-            self.parse_row_marathonbet()
-        elif bookmaker == "LADBROKES":
-            self.parse_row_ladbrokes()
+        try:
+            if bookmaker == "PINNACLE":
+                self.parse_row_pinnacle()
+            elif bookmaker == "EIGHT88":
+                self.parse_row_eight88()
+            elif bookmaker == "PADDYPOWER":
+                self.parse_row_paddypower()
+            elif bookmaker == "WILLIAMHILL":
+                self.parse_row_williamhill()
+            elif bookmaker == "SPORTINGBET":
+                self.parse_row_sportingbet()
+            elif bookmaker == "MARATHONBET":
+                self.parse_row_marathonbet()
+            elif bookmaker == "LADBROKES":
+                self.parse_row_ladbrokes()
+        except KeyError:
+            self.row_parse_error = True
+            self.row_parse_error_reason = "KeyError"
+        except IndexError:
+            self.row_parse_error = True
+            self.row_parse_error_reason = "IndexError"
 
         # Now create the bettable outcomes
         if not self.row_parse_error:
