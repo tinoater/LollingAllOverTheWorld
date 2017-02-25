@@ -635,7 +635,7 @@ class OddsPageParser:
     def parse_ladbrokes(self):
         if self.category == "FOOTBALL":
             # Extract information from page
-            self.sub_category = self.html_soup.findAll("h1")[1].text
+            self.sub_category = self.html_soup.findAll("h1", {"data-bind": "text: headerViewModel.title()"})[0].text
 
         if self.sub_category.upper() == "ENGLISH":
             # Probably no odds for this sub category

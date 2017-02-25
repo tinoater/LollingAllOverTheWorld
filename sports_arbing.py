@@ -162,6 +162,9 @@ if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d_%H")
     calc_arbs_for_date(date)
 
+    # Kill leftover chromedriver processes
+    processed_killed = mu.kill_processes_by_name("chromedriver_win.exe")
+    print(str(processed_killed))
     #debug()
 
     # adding_a_new_bookmaker()
