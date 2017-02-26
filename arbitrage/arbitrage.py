@@ -1,7 +1,8 @@
-import warnings
 import copy
-from config import *
 import time
+import warnings
+
+from arbitrage.config import *
 
 
 class Odds:

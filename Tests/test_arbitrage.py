@@ -1,8 +1,10 @@
 import unittest
 
-import arbitrage
 import mwutils
-from config import *
+
+from .context import arbitrage
+
+from arbitrage.config import *
 
 
 # ------------------------

@@ -1,7 +1,8 @@
 import unittest
 
 import mwutils
-import arbitrage
+
+from .context import arbitrage
 
 
 # ------------------------------------

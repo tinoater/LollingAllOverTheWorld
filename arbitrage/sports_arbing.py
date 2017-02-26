@@ -1,10 +1,13 @@
-import time
-import mwutils as mu
-import arbitrage
-from config import *
-from joblib import Parallel, delayed
 import multiprocessing
-import os
+import time
+
+import mwutils.email_utils as eu
+import mwutils.utils as mu
+from joblib import Parallel, delayed
+
+import arbitrage.arbitrage as arbitrage
+
+from arbitrage.config import *
 
 NUM_CORES = multiprocessing.cpu_count()
 
@@ -26,7 +29,7 @@ def download_html_soup_to_file(sub_category, bet_provider, date):
         html_soup = mu.get_page_source(file_path=file_path, url=url, sleep_time=1)
 
 
-def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
+def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False, email_arbs=True):
     """
     For given date draw odds from online or file, compare and output ArbitrageBets
     :param date:
@@ -128,10 +131,23 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
 
     out_file.close()
 
-    print("Arbs found: " + str(len(all_arbs)) + "\n")
-    for each in all_arbs:
-        print(str(each))
-        print("--------------")
+    # Email arbs found to me
+    if email_arbs:
+        if len(all_arbs) > 0:
+            arbs_str = "Arbs found: " + str(len(all_arbs)) + "\n"
+            for each in all_arbs:
+                arbs_str += str(each) + "\n"
+                arbs_str += "--------------------------------------\n"
+
+            # Email the text summary
+            eu.AhabEmailSender("arbitrage",
+                               "martinleewatts@gmail.com",
+                               arbs_str)
+    else:
+        print("Arbs found: " + str(len(all_arbs)) + "\n")
+        for each in all_arbs:
+            print(str(each))
+            print("--------------")
 
 
 def adding_a_new_bookmaker():
