@@ -11,7 +11,7 @@ from arbitrage.config import *
 # Odds class tests
 # ------------------------
 class OddsFractionalOddsTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
+    """Tests for Odds class in arbitrage_classes.py."""
 
     def test_fractional_odds_no_space(self):
         """Are fractional odds translated correctly when no spacces?"""
@@ -35,7 +35,7 @@ class OddsFractionalOddsTestCase(unittest.TestCase):
 
 
 class OddsDecimalOddsTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
+    """Tests for Odds class in arbitrage_classes.py."""
 
     def test_decimal_odds_long_decimal(self):
         """Are decimal odds with long decimals handled?"""
@@ -59,7 +59,7 @@ class OddsDecimalOddsTestCase(unittest.TestCase):
 
 
 class OddsEvensTestCase(unittest.TestCase):
-    """Tests for Odds class in arbitrage.py."""
+    """Tests for Odds class in arbitrage_classes.py."""
 
     def test_evens_odds(self):
         """Are "evens" odds handled?"""
@@ -111,7 +111,7 @@ class OddsComparisonTestCase(unittest.TestCase):
 # Participant class tests
 # ------------------------
 class ParticipantTestCase(unittest.TestCase):
-    """Tests for Participant class in arbitrage.py."""
+    """Tests for Participant class in arbitrage_classes.py."""
 
     def test_category_present(self):
         """Are categories found correctly?"""
@@ -165,7 +165,7 @@ class ParticipantEqualityTestCase(unittest.TestCase):
 # Event class tests
 # ------------------------
 class EventTestCase(unittest.TestCase):
-    """Tests for Event class in arbitrage.py."""
+    """Tests for Event class in arbitrage_classes.py."""
 
     def test_basic_event_full_definition(self):
         """Can basic events be created"""
@@ -629,7 +629,7 @@ class BetShortHandTestCase(unittest.TestCase):
 # ArbitrageBet class tests
 # --------------------------
 class ArbitrageBetTestCase(unittest.TestCase):
-    """Tests for ArbitrageBet class in arbitrage.py."""
+    """Tests for ArbitrageBet class in arbitrage_classes.py."""
 
     def test_validations_same_event(self):
         """Does the arb bet fail when events are different?"""
@@ -713,7 +713,7 @@ class ArbitrageBetTestCase(unittest.TestCase):
 
 
 class ArbitrageBetShortHandTestCase(unittest.TestCase):
-    """Tests for ArbitrageBet class in arbitrage.py."""
+    """Tests for ArbitrageBet class in arbitrage_classes.py."""
 
     def test_validations_same_event(self):
         """Does the arb bet fail when events are different?"""

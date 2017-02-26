@@ -95,7 +95,7 @@ class Eight88SnookerPageTestCase(unittest.TestCase):
 # PaddyPowerFootballMatchPage class tests
 # ------------------------------------
 class PaddyPowerFootballMatchPageTestCase(unittest.TestCase):
-    """Tests for PaddyPowerFootballMatchPage class in arbitrage.py."""
+    """Tests for PaddyPowerFootballMatchPage class in arbitrage_classes.py."""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "PADDYPOWER")
@@ -167,7 +167,7 @@ class PaddyPowerSnookerPageTestCase(unittest.TestCase):
 
 
 class PinnacleFootballMatchPageTestCase(unittest.TestCase):
-    """Tests for PinnacleFootballMatchPage class in arbitrage.py."""
+    """Tests for PinnacleFootballMatchPage class in arbitrage_classes.py."""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "PINNACLE")
@@ -208,7 +208,7 @@ class PinnacleFootballMatchPageTestCase(unittest.TestCase):
 # WilliamHillFootballMatchPage class tests
 # ------------------------------------
 class WilliamHillFootballMatchPageTestCase(unittest.TestCase):
-    """Tests for WilliamHillFootballMatchPage class in arbitrage.py."""
+    """Tests for WilliamHillFootballMatchPage class in arbitrage_classes.py."""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "WILLIAMHILL")
@@ -291,7 +291,7 @@ class WilliamHillSnookerPageTestCase(unittest.TestCase):
 # SportingBetFootballMatchPage class tests
 # ------------------------------------
 class SportingBetFootballMatchPageTestCase(unittest.TestCase):
-    """Tests for SportingBetFootballMatchPage class in arbitrage.py."""
+    """Tests for SportingBetFootballMatchPage class in arbitrage_classes.py."""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "SPORTINGBET")
@@ -374,7 +374,7 @@ class SportingBetSnookerPageTestCase(unittest.TestCase):
 # MarathonBetFootballMatchPage class tests
 # ------------------------------------
 class MarathonBetFootballMatchPageTestCase(unittest.TestCase):
-    """Tests for MarathonBetFootballMatchPage class in arbitrage.py."""
+    """Tests for MarathonBetFootballMatchPage class in arbitrage_classes.py."""
 
     def test_constants(self):
         self.assertEqual(self.page.bookmaker, "MARATHONBET")

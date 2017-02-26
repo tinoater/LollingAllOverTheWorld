@@ -1,13 +1,14 @@
 import multiprocessing
 import time
+import sys
 
 import mwutils.email_utils as eu
 import mwutils.utils as mu
 from joblib import Parallel, delayed
 
-import arbitrage.arbitrage as arbitrage
-
+import arbitrage.arbitrage_classes as arbitrage
 from arbitrage.config import *
+
 
 NUM_CORES = multiprocessing.cpu_count()
 
@@ -29,7 +30,7 @@ def download_html_soup_to_file(sub_category, bet_provider, date):
         html_soup = mu.get_page_source(file_path=file_path, url=url, sleep_time=1)
 
 
-def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False, email_arbs=True):
+def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False):
     """
     For given date draw odds from online or file, compare and output ArbitrageBets
     :param date:
@@ -131,23 +132,15 @@ def calc_arbs_for_date(date, category_list=CATEGORY_LIST, ignore_files=False, em
 
     out_file.close()
 
-    # Email arbs found to me
-    if email_arbs:
-        if len(all_arbs) > 0:
-            arbs_str = "Arbs found: " + str(len(all_arbs)) + "\n"
-            for each in all_arbs:
-                arbs_str += str(each) + "\n"
-                arbs_str += "--------------------------------------\n"
-
-            # Email the text summary
-            eu.AhabEmailSender("arbitrage",
-                               "martinleewatts@gmail.com",
-                               arbs_str)
-    else:
-        print("Arbs found: " + str(len(all_arbs)) + "\n")
+    if len(all_arbs) > 0:
+        arbs_str = "Arbs found: " + str(len(all_arbs)) + "\n"
         for each in all_arbs:
-            print(str(each))
-            print("--------------")
+            arbs_str += str(each) + "\n"
+            arbs_str += "--------------------------------------\n"
+    else:
+        arbs_str = "No arbs found"
+
+    return arbs_str
 
 
 def adding_a_new_bookmaker():
@@ -176,7 +169,20 @@ def debug():
 
 if __name__ == "__main__":
     date = time.strftime("%Y_%m_%d_%H")
-    calc_arbs_for_date(date)
+    try:
+        arbs_str = calc_arbs_for_date(date)
+        arbs_subject = None
+    except:
+        exception = sys.exc_info()[0]
+        arbs_str = "ERROR" + exception
+        arbs_subject = "Arbitrage ERROR"
+
+    # Email the text summary
+    email = eu.AhabEmailSender("arbitrage",
+                               "martinleewatts@gmail.com",
+                               arbs_str,
+                               subject=arbs_subject)
+    email.send()
 
     # Kill leftover chromedriver processes
     processed_killed = mu.kill_processes_by_name("chromedriver_win.exe")

@@ -4,7 +4,6 @@ import warnings
 
 from arbitrage.config import *
 
-
 class Odds:
     """
     Odds, fractional or decimal
