@@ -1,6 +1,7 @@
 import multiprocessing
 import time
 import sys
+import traceback
 
 import mwutils.email_utils as eu
 import mwutils.utils as mu
@@ -173,8 +174,8 @@ if __name__ == "__main__":
         arbs_str = calc_arbs_for_date(date)
         arbs_subject = None
     except:
-        exception = sys.exc_info()[0]
-        arbs_str = "ERROR" + exception
+        exception = traceback.format_exc()
+        arbs_str = "ERROR" + str(exception)
         arbs_subject = "Arbitrage ERROR"
 
     # Email the text summary
